@@ -1,0 +1,69 @@
+@model ReviewViewModel
+@{
+    ViewData["Title"] = "Review leave request";
+    var r = Model.Request;
+}
+<h1 class="h3 mb-3">@r.User!.FullName: @r.LeaveType!.Name <partial name="_StatusBadge" model="r.Status" /></h1>
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card p-4">
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Dates</dt><dd class="col-sm-8">@LeaveService.Dates(r)</dd>
+                <dt class="col-sm-4">Working days</dt><dd class="col-sm-8">@r.Days.ToString("0.#")</dd>
+                <dt class="col-sm-4">Department</dt><dd class="col-sm-8">@(r.User.Department?.Name ?? "Not set")</dd>
+                <dt class="col-sm-4">Reason</dt><dd class="col-sm-8">@(string.IsNullOrWhiteSpace(r.Reason) ? "None given" : r.Reason)</dd>
+                @if (r.AttachmentStoredName != null)
+                {
+                    <dt class="col-sm-4">Document</dt><dd class="col-sm-8"><a asp-controller="Leave" asp-action="Attachment" asp-route-id="@r.Id">@r.AttachmentFileName</a></dd>
+                }
+                <dt class="col-sm-4">Submitted</dt><dd class="col-sm-8">@r.CreatedAt.ToLocalTime().ToString("d MMM yyyy HH:mm")</dd>
+                @if (r.DecidedAt != null)
+                {
+                    <dt class="col-sm-4">@r.Status by</dt><dd class="col-sm-8">@r.DecidedBy?.FullName, @r.DecidedAt.Value.ToLocalTime().ToString("d MMM yyyy")</dd>
+                }
+            </dl>
+
+            @if (Model.CanDecide)
+            {
+                <hr />
+                <form asp-action="Decide" asp-route-id="@r.Id" method="post">
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Comment <span class="text-muted small">(required if rejecting)</span></label>
+                        <textarea id="comment" name="comment" class="form-control" rows="2"></textarea>
+                    </div>
+                    <button name="approve" value="true" class="btn btn-success">Approve</button>
+                    <button name="approve" value="false" class="btn btn-outline-danger">Reject</button>
+                </form>
+            }
+        </div>
+    </div>
+    <div class="col-lg-5">
+        @if (Model.Balance != null)
+        {
+            var b = Model.Balance;
+            <div class="card p-3 mb-3">
+                <h2 class="h6">@r.User.FullName's @b.LeaveType.Name.ToLower(), @b.Year</h2>
+                <table class="table table-sm mb-0">
+                    <tr><td>Eligible + brought forward + adjustments</td><td class="text-end">@b.Available.ToString("0.#")</td></tr>
+                    <tr><td>Already taken</td><td class="text-end">@b.Taken.ToString("0.#")</td></tr>
+                    <tr><td>Pending (including this request)</td><td class="text-end">@b.Pending.ToString("0.#")</td></tr>
+                    <tr class="fw-semibold"><td>Remaining if approved</td><td class="text-end">@b.Remaining.ToString("0.#")</td></tr>
+                </table>
+            </div>
+        }
+        <div class="card p-3">
+            <h2 class="h6">Team members away on these dates</h2>
+            @if (!Model.TeamOverlaps.Any()) { <p class="text-muted small mb-0">Nobody else in the team.</p> }
+            else
+            {
+                <ul class="list-unstyled small mb-0">
+                    @foreach (var o in Model.TeamOverlaps)
+                    {
+                        <li class="py-1 border-bottom">@o.User!.FullName: @LeaveService.Dates(o) <partial name="_StatusBadge" model="o.Status" /></li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+<a class="btn btn-link mt-2 px-0" asp-action="Index">&larr; Approvals</a>

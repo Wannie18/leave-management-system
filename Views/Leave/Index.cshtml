@@ -1,0 +1,62 @@
+@model List<LeaveRequest>
+@{
+    ViewData["Title"] = "My leave";
+    int year = ViewBag.Year;
+    var balances = (List<BalanceSummary>)ViewBag.Balances;
+}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h1 class="h3 mb-0">My leave, @year</h1>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-sm" asp-route-year="@(year - 1)">&larr; @(year - 1)</a>
+        <a class="btn btn-outline-secondary btn-sm" asp-route-year="@(year + 1)">@(year + 1) &rarr;</a>
+        <a class="btn btn-primary btn-sm" asp-action="Apply">Apply for leave</a>
+    </div>
+</div>
+
+<div class="card p-3 mb-4">
+    <h2 class="h6">Balances</h2>
+    <div class="table-responsive">
+        <table class="table table-sm mb-0">
+            <thead><tr><th>Leave type</th><th class="text-end">Eligible</th><th class="text-end">Brought forward</th><th class="text-end">Adjustments</th><th class="text-end">Taken</th><th class="text-end">Pending</th><th class="text-end">Remaining</th></tr></thead>
+            <tbody>
+                @foreach (var b in balances)
+                {
+                    <tr>
+                        <td>@b.LeaveType.Name</td>
+                        <td class="text-end">@b.Entitlement.ToString("0.#")</td>
+                        <td class="text-end">@b.BroughtForward.ToString("0.#")</td>
+                        <td class="text-end">@b.Adjustments.ToString("0.#")</td>
+                        <td class="text-end">@b.Taken.ToString("0.#")</td>
+                        <td class="text-end">@b.Pending.ToString("0.#")</td>
+                        <td class="text-end fw-semibold">@b.Remaining.ToString("0.#")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card p-3">
+    <h2 class="h6">Requests</h2>
+    @if (!Model.Any()) { <p class="text-muted mb-0">No leave requests in @year.</p> }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead><tr><th>Leave type</th><th>Dates</th><th class="text-end">Days</th><th>Status</th><th>Submitted</th></tr></thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        <tr>
+                            <td><a asp-action="Details" asp-route-id="@r.Id">@r.LeaveType!.Name</a></td>
+                            <td>@LeaveService.Dates(r)</td>
+                            <td class="text-end">@r.Days.ToString("0.#")</td>
+                            <td><partial name="_StatusBadge" model="r.Status" /></td>
+                            <td>@r.CreatedAt.ToLocalTime().ToString("d MMM yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

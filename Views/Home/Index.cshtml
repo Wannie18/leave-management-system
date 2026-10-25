@@ -1,0 +1,76 @@
+@model DashboardViewModel
+@{ ViewData["Title"] = "Home"; }
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h1 class="h3 mb-0">Hello, @Model.User.FullName.Split(' ')[0]</h1>
+    <a class="btn btn-primary" asp-controller="Leave" asp-action="Apply">Apply for leave</a>
+</div>
+
+@if (Model.PendingApprovals > 0)
+{
+    <div class="alert alert-warning d-flex justify-content-between align-items-center">
+        <span>@Model.PendingApprovals leave @(Model.PendingApprovals == 1 ? "request is" : "requests are") waiting for your decision.</span>
+        <a class="btn btn-sm btn-dark" asp-controller="Approvals" asp-action="Index">Review</a>
+    </div>
+}
+
+<h2 class="h5 mt-4">Your balance for @Model.Year</h2>
+<div class="row g-3">
+    @foreach (var b in Model.Balances.Where(b => b.LeaveType.ShowOnDashboard || b.Taken > 0 || b.Pending > 0))
+    {
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card p-3 h-100">
+                <div class="text-muted small">@b.LeaveType.Name</div>
+                <div class="stat">@b.Remaining.ToString("0.#")</div>
+                <div class="small text-muted">days left of @b.Available.ToString("0.#")</div>
+                @if (b.Pending > 0) { <div class="small text-warning-emphasis">@b.Pending.ToString("0.#") pending</div> }
+            </div>
+        </div>
+    }
+</div>
+<div class="small mt-2"><a asp-controller="Leave" asp-action="Index">See all your leave balances</a></div>
+
+<div class="row g-3 mt-2">
+    <div class="col-lg-6">
+        <div class="card p-3 h-100">
+            <h2 class="h6">Your upcoming leave</h2>
+            @if (!Model.Upcoming.Any()) { <p class="text-muted small mb-0">Nothing booked.</p> }
+            else
+            {
+                <ul class="list-unstyled mb-0">
+                    @foreach (var r in Model.Upcoming)
+                    {
+                        <li class="py-1 border-bottom">
+                            <a asp-controller="Leave" asp-action="Details" asp-route-id="@r.Id">@r.LeaveType!.Name</a>,
+                            @LeaveService.Dates(r) (@r.Days.ToString("0.#") days)
+                            <partial name="_StatusBadge" model="r.Status" />
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card p-3 h-100">
+            <h2 class="h6">Colleagues away today</h2>
+            @if (!Model.TeamAwayToday.Any()) { <p class="text-muted small mb-0">Everyone in your team is in.</p> }
+            else
+            {
+                <ul class="list-unstyled mb-0">
+                    @foreach (var r in Model.TeamAwayToday)
+                    {
+                        <li class="py-1 border-bottom">@r.User!.FullName, back after @r.EndDate.ToString("d MMM")</li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+
+@if (Model.IsHr)
+{
+    <h2 class="h5 mt-4">Organization today</h2>
+    <div class="row g-3">
+        <div class="col-6 col-md-3"><div class="card p-3"><div class="text-muted small">Staff on leave</div><div class="stat">@Model.OrgAwayToday</div></div></div>
+        <div class="col-6 col-md-3"><div class="card p-3"><div class="text-muted small">Requests pending</div><div class="stat">@Model.OrgPending</div><a class="small" asp-controller="Reports" asp-action="Taken" asp-route-status="Pending">View</a></div></div>
+    </div>
+}

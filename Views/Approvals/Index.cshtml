@@ -1,0 +1,43 @@
+@model List<LeaveRequest>
+@{
+    ViewData["Title"] = "Approvals";
+    var team = (List<ApplicationUser>)ViewBag.Team;
+}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h1 class="h3 mb-0">Waiting for your decision</h1>
+    <a class="btn btn-outline-secondary btn-sm" asp-action="Delegate">Delegate while I'm away</a>
+</div>
+<div class="card p-3 mb-4">
+    @if (!Model.Any()) { <p class="text-muted mb-0">No requests are waiting for you.</p> }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead><tr><th>Employee</th><th>Leave type</th><th>Dates</th><th class="text-end">Days</th><th>Submitted</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        <tr>
+                            <td>@r.User!.FullName<div class="small text-muted">@r.User.Department?.Name</div></td>
+                            <td>@r.LeaveType!.Name</td>
+                            <td>@LeaveService.Dates(r)</td>
+                            <td class="text-end">@r.Days.ToString("0.#")</td>
+                            <td>@r.CreatedAt.ToLocalTime().ToString("d MMM")@if (r.EscalatedAt != null) { <span class="badge bg-danger ms-1">Escalated</span> }</td>
+                            <td class="text-end"><a class="btn btn-sm btn-primary" asp-action="Review" asp-route-id="@r.Id">Review</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+@if (team.Any())
+{
+    <div class="card p-3">
+        <h2 class="h6">Your team (@team.Count)</h2>
+        <ul class="list-inline mb-0">
+            @foreach (var p in team) { <li class="list-inline-item badge text-bg-light border fw-normal">@p.FullName</li> }
+        </ul>
+        <a class="small mt-2" asp-controller="Reports" asp-action="Calendar">See the team calendar</a>
+    </div>
+}

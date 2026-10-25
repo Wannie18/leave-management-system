@@ -1,0 +1,64 @@
+@model CalendarViewModel
+@{
+    ViewData["Title"] = "Leave calendar";
+    var prev = Model.First.AddMonths(-1);
+    var next = Model.First.AddMonths(1);
+    var today = DateTime.Today;
+}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h1 class="h3 mb-0">Leave calendar, @Model.First.ToString("MMMM yyyy")</h1>
+    <div class="d-flex gap-2 align-items-center">
+        <a class="btn btn-outline-secondary btn-sm" asp-route-year="@prev.Year" asp-route-month="@prev.Month" asp-route-departmentId="@Model.DepartmentId">&larr;</a>
+        <a class="btn btn-outline-secondary btn-sm" asp-route-year="@today.Year" asp-route-month="@today.Month" asp-route-departmentId="@Model.DepartmentId">Today</a>
+        <a class="btn btn-outline-secondary btn-sm" asp-route-year="@next.Year" asp-route-month="@next.Month" asp-route-departmentId="@Model.DepartmentId">&rarr;</a>
+        @if (Model.Departments != null)
+        {
+            <form method="get" class="d-flex gap-1">
+                <input type="hidden" name="year" value="@Model.Year" /><input type="hidden" name="month" value="@Model.Month" />
+                <select name="departmentId" asp-items="Model.Departments" class="form-select form-select-sm" onchange="this.form.submit()"><option value="">All departments</option></select>
+            </form>
+        }
+    </div>
+</div>
+<div class="small mb-2">
+    <span class="d-inline-block px-2 on-approved cal">Approved</span>
+    <span class="d-inline-block px-2 on-pending cal">Pending</span>
+    <span class="d-inline-block px-2 hol cal">Public holiday</span>
+    <span class="d-inline-block px-2 wk cal">Weekend</span>
+</div>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-bordered cal mb-0">
+            <thead>
+                <tr>
+                    <th class="name">Name</th>
+                    @for (var d = 1; d <= Model.DaysInMonth; d++)
+                    {
+                        var date = new DateTime(Model.Year, Model.Month, d);
+                        var weekend = date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+                        <th class="@(weekend ? "wk" : "") @(Model.Holidays.Contains(date) ? "hol" : "") @(date == today ? "today" : "")">@date.ToString("ddd")[0]<br />@d</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.People)
+                {
+                    var mine = Model.Requests.Where(r => r.UserId == p.Id).ToList();
+                    <tr>
+                        <td class="name">@p.FullName</td>
+                        @for (var d = 1; d <= Model.DaysInMonth; d++)
+                        {
+                            var date = new DateTime(Model.Year, Model.Month, d);
+                            var weekend = date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+                            var holiday = Model.Holidays.Contains(date);
+                            var req = weekend || holiday ? null : mine.FirstOrDefault(r => r.StartDate <= date && r.EndDate >= date);
+                            var cls = req == null ? (weekend ? "wk" : holiday ? "hol" : "") : req.Status == LeaveStatus.Approved ? "on-approved" : "on-pending";
+                            <td class="@cls @(date == today ? "today" : "")" title="@(req != null ? $"{req.LeaveType!.Name} ({req.Status})" : "")">@(req?.IsHalfDay == true ? "½" : "")</td>
+                        }
+                    </tr>
+                }
+                @if (!Model.People.Any()) { <tr><td class="name text-muted" colspan="@(Model.DaysInMonth + 1)">Nobody to show.</td></tr> }
+            </tbody>
+        </table>
+    </div>
+</div>

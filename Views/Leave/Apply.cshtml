@@ -1,0 +1,91 @@
+@model ApplyViewModel
+@{
+    ViewData["Title"] = Model.OnBehalf ? "Record leave for an employee" : "Apply for leave";
+    var action = Model.OnBehalf ? "Record" : "Apply";
+}
+<h1 class="h3 mb-3">@ViewData["Title"]</h1>
+@if (Model.OnBehalf)
+{
+    <p class="text-muted">Leave recorded here is approved straight away and the employee is notified. Notice and document rules are not enforced.</p>
+}
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card p-4">
+            <form id="apply-form" asp-action="@action" method="post" enctype="multipart/form-data" data-count-url="@Url.Action("CountDays")">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small" role="alert"></div>
+                @if (Model.OnBehalf)
+                {
+                    <div class="mb-3">
+                        <label asp-for="UserId" class="form-label required"></label>
+                        <select asp-for="UserId" asp-items="Model.Employees" class="form-select" onchange="location.href='@Url.Action("Record")?userId='+this.value">
+                            <option value="">Choose an employee...</option>
+                        </select>
+                        <span asp-validation-for="UserId" class="text-danger small"></span>
+                    </div>
+                }
+                <div class="mb-3">
+                    <label asp-for="LeaveTypeId" class="form-label required"></label>
+                    <select asp-for="LeaveTypeId" class="form-select">
+                        <option value="">Choose...</option>
+                        @foreach (var t in Model.LeaveTypes)
+                        {
+                            var note = new List<string>();
+                            if (t.MinNoticeDays > 0) note.Add($"{t.MinNoticeDays} working days' notice");
+                            if (t.RequiresDocument) note.Add(t.DocumentRequiredAfterDays > 0 ? $"document needed over {t.DocumentRequiredAfterDays:0.#} days" : "document needed");
+                            <option value="@t.Id" selected="@(Model.LeaveTypeId == t.Id)">@t.Name@(note.Any() ? $" ({string.Join(", ", note)})" : "")</option>
+                        }
+                    </select>
+                    <span asp-validation-for="LeaveTypeId" class="text-danger small"></span>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <label asp-for="StartDate" class="form-label required"></label>
+                        <input asp-for="StartDate" type="date" class="form-control" />
+                        <span asp-validation-for="StartDate" class="text-danger small"></span>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <label asp-for="EndDate" class="form-label required"></label>
+                        <input asp-for="EndDate" type="date" class="form-control" />
+                        <span asp-validation-for="EndDate" class="text-danger small"></span>
+                    </div>
+                </div>
+                <div class="form-check mb-2" id="half-day-row">
+                    <input asp-for="IsHalfDay" class="form-check-input" />
+                    <label asp-for="IsHalfDay" class="form-check-label"></label>
+                </div>
+                <div class="mb-3 fw-semibold text-primary" id="day-count" aria-live="polite"></div>
+                <div class="mb-3">
+                    <label asp-for="Reason" class="form-label"></label>
+                    <textarea asp-for="Reason" class="form-control" rows="3" placeholder="Optional"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Attachment" class="form-label"></label>
+                    <input asp-for="Attachment" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                    <div class="form-text">For example a sick note. PDF, Word or image, up to 5 MB.</div>
+                    <span asp-validation-for="Attachment" class="text-danger small"></span>
+                </div>
+                <button type="submit" class="btn btn-primary">@(Model.OnBehalf ? "Record leave" : "Submit request")</button>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-link">Cancel</a>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card p-3">
+            <h2 class="h6">@(Model.OnBehalf ? "Employee's balance" : "Your balance") this year</h2>
+            @if (!Model.Balances.Any()) { <p class="text-muted small mb-0">Choose an employee to see their balance.</p> }
+            else
+            {
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Leave type</th><th class="text-end">Remaining</th><th class="text-end">Pending</th></tr></thead>
+                    <tbody>
+                        @foreach (var b in Model.Balances)
+                        {
+                            <tr><td>@b.LeaveType.Name</td><td class="text-end fw-semibold">@b.Remaining.ToString("0.#")</td><td class="text-end">@b.Pending.ToString("0.#")</td></tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

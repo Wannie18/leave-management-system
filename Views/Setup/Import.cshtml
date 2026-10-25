@@ -1,0 +1,50 @@
+@model List<ImportRow>
+@{ ViewData["Title"] = "Import spreadsheet"; }
+<h1 class="h3 mb-3">Import staff and balances from the spreadsheet</h1>
+<div class="row g-4 mb-4">
+    <div class="col-lg-7">
+        <div class="card p-4">
+            <ol class="small">
+                <li><a asp-action="ImportTemplate">Download the import template</a> and copy your tracker's columns into it (name, email, eligible days, brought forward, days taken, remaining).</li>
+                <li>Choose which leave type and year the numbers are for, usually annual leave for this year.</li>
+                <li>Upload. New staff are created with a temporary password shown below. Existing staff (matched by email) are updated. You can run it again safely.</li>
+                <li>Check the "Remaining" columns match before you go live.</li>
+            </ol>
+            <form asp-action="Import" method="post" enctype="multipart/form-data">
+                <div class="row">
+                    <div class="col-sm-6 mb-3"><label class="form-label small">Leave type</label><select name="leaveTypeId" asp-items="ViewBag.LeaveTypes" class="form-select"></select></div>
+                    <div class="col-sm-6 mb-3"><label class="form-label small">Year</label><input name="year" type="number" value="@ViewBag.Year" class="form-control" /></div>
+                </div>
+                <div class="mb-3"><input name="file" type="file" accept=".xlsx" class="form-control" required /></div>
+                <button class="btn btn-primary">Import</button>
+            </form>
+        </div>
+    </div>
+</div>
+@if (Model.Any())
+{
+    var mismatches = Model.Count(r => !r.Matches);
+    <div class="alert @(mismatches == 0 ? "alert-success" : "alert-warning")">
+        @Model.Count(r => r.Status.StartsWith("Created")) created, @Model.Count(r => r.Status.StartsWith("Updated")) updated, @Model.Count(r => r.Status.StartsWith("Error")) errors.
+        @if (mismatches > 0) { <strong>@mismatches remaining balances don't match the spreadsheet; check those rows.</strong> }
+    </div>
+    <p class="small text-muted">Copy the temporary passwords now; they are not shown again. Staff are asked to change them at first sign-in.</p>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-sm mb-0">
+                <thead><tr><th>Row</th><th>Name</th><th>Email</th><th>Result</th><th>Temporary password</th><th class="text-end">Remaining (sheet)</th><th class="text-end">Remaining (system)</th></tr></thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        <tr class="@(r.Status.StartsWith("Error") ? "table-danger" : !r.Matches ? "table-warning" : "")">
+                            <td>@r.RowNumber</td><td>@r.FullName</td><td>@r.Email</td><td style="white-space:normal">@r.Status</td>
+                            <td class="font-monospace">@r.TemporaryPassword</td>
+                            <td class="text-end">@r.SheetRemaining?.ToString("0.#")</td>
+                            <td class="text-end">@r.SystemRemaining?.ToString("0.#")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

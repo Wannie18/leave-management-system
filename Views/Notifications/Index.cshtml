@@ -1,0 +1,21 @@
+@model List<Notification>
+@{ ViewData["Title"] = "Notifications"; }
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Notifications</h1>
+    @if (Model.Any(n => !n.IsRead))
+    {
+        <form asp-action="MarkAllRead" method="post"><button class="btn btn-sm btn-outline-secondary">Mark all as read</button></form>
+    }
+</div>
+<div class="card">
+    @if (!Model.Any()) { <p class="text-muted p-3 mb-0">No notifications yet.</p> }
+    <div class="list-group list-group-flush">
+        @foreach (var n in Model)
+        {
+            <a class="list-group-item list-group-item-action @(n.IsRead ? "" : "fw-semibold")" asp-action="Open" asp-route-id="@n.Id">
+                <div>@n.Message</div>
+                <div class="small text-muted fw-normal">@n.CreatedAt.ToLocalTime().ToString("d MMM yyyy HH:mm")</div>
+            </a>
+        }
+    </div>
+</div>

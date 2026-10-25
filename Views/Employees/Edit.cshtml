@@ -1,0 +1,60 @@
+@model EmployeeEditViewModel
+@{
+    var isNew = string.IsNullOrEmpty(Model.Id);
+    ViewData["Title"] = isNew ? "Add employee" : $"Edit {Model.FullName}";
+}
+<h1 class="h3 mb-3">@ViewData["Title"]</h1>
+<div class="card p-4">
+    <form asp-action="Save" method="post">
+        <input type="hidden" asp-for="Id" />
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
+        <div class="row">
+            <div class="col-md-6 mb-3"><label asp-for="FullName" class="form-label required"></label><input asp-for="FullName" class="form-control" /><span asp-validation-for="FullName" class="text-danger small"></span></div>
+            <div class="col-md-6 mb-3"><label asp-for="Email" class="form-label required">Work email</label><input asp-for="Email" class="form-control" /><span asp-validation-for="Email" class="text-danger small"></span></div>
+            <div class="col-md-4 mb-3"><label asp-for="EmployeeNumber" class="form-label"></label><input asp-for="EmployeeNumber" class="form-control" /></div>
+            <div class="col-md-4 mb-3"><label asp-for="JobTitle" class="form-label"></label><input asp-for="JobTitle" class="form-control" /></div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="DepartmentId" class="form-label"></label>
+                <select asp-for="DepartmentId" asp-items="Model.Departments" class="form-select"><option value="">None</option></select>
+                <input asp-for="NewDepartment" class="form-control form-control-sm mt-1" placeholder="...or type a new department" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="SupervisorId" class="form-label"></label>
+                <select asp-for="SupervisorId" asp-items="Model.Supervisors" class="form-select"><option value="">None (HR approves)</option></select>
+                <span asp-validation-for="SupervisorId" class="text-danger small"></span>
+            </div>
+            <div class="col-md-4 mb-3"><label asp-for="StartDate" class="form-label required"></label><input asp-for="StartDate" type="date" class="form-control" /></div>
+            <div class="col-md-4 mb-3"><label asp-for="EndDate" class="form-label"></label><input asp-for="EndDate" type="date" class="form-control" /></div>
+        </div>
+        @if (isNew)
+        {
+            <div class="mb-3 col-md-6">
+                <label asp-for="InitialPassword" class="form-label required"></label>
+                <input asp-for="InitialPassword" type="text" class="form-control font-monospace" />
+                <div class="form-text">Give this to the employee. They'll be asked to choose their own password when they first sign in.</div>
+                <span asp-validation-for="InitialPassword" class="text-danger small"></span>
+            </div>
+        }
+        <div class="d-flex flex-wrap gap-4 mb-3">
+            <div class="form-check"><input asp-for="IsActive" class="form-check-input" /><label asp-for="IsActive" class="form-check-label"></label></div>
+            <div class="form-check"><input asp-for="IsHr" class="form-check-input" /><label asp-for="IsHr" class="form-check-label"></label></div>
+            @if (User.IsInRole(Roles.Admin))
+            {
+                <div class="form-check"><input asp-for="IsAdmin" class="form-check-input" /><label asp-for="IsAdmin" class="form-check-label"></label></div>
+            }
+        </div>
+        <button class="btn btn-primary">Save</button>
+        <a asp-action="Index" class="btn btn-link">Cancel</a>
+    </form>
+</div>
+@if (!isNew)
+{
+    <div class="card p-3 mt-3">
+        <h2 class="h6">Password</h2>
+        <form asp-action="ResetPassword" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Set a new temporary password for this employee?');">
+            <button class="btn btn-sm btn-outline-warning">Give a new temporary password</button>
+            <span class="small text-muted ms-2">Also unlocks the account if it's locked.</span>
+        </form>
+    </div>
+}
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

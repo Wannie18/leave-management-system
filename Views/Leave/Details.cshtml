@@ -1,0 +1,44 @@
+@model LeaveRequest
+@{
+    ViewData["Title"] = "Leave request";
+    bool canCancel = ViewBag.CanCancel;
+    bool canDecide = ViewBag.CanDecide;
+}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h1 class="h3 mb-0">@Model.LeaveType!.Name <partial name="_StatusBadge" model="Model.Status" /></h1>
+    <div class="d-flex gap-2">
+        @if (canDecide) { <a class="btn btn-primary" asp-controller="Approvals" asp-action="Review" asp-route-id="@Model.Id">Approve or reject</a> }
+        @if (canCancel)
+        {
+            <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Cancel this leave request?');">
+                <button class="btn btn-outline-danger">Cancel request</button>
+            </form>
+        }
+    </div>
+</div>
+<div class="card p-4">
+    <dl class="row mb-0">
+        <dt class="col-sm-3">Employee</dt><dd class="col-sm-9">@Model.User!.FullName</dd>
+        <dt class="col-sm-3">Dates</dt><dd class="col-sm-9">@LeaveService.Dates(Model)</dd>
+        <dt class="col-sm-3">Working days</dt><dd class="col-sm-9">@Model.Days.ToString("0.#")</dd>
+        <dt class="col-sm-3">Reason</dt><dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.Reason) ? "None given" : Model.Reason)</dd>
+        @if (Model.AttachmentStoredName != null)
+        {
+            <dt class="col-sm-3">Document</dt><dd class="col-sm-9"><a asp-action="Attachment" asp-route-id="@Model.Id">@Model.AttachmentFileName</a></dd>
+        }
+        <dt class="col-sm-3">Submitted</dt><dd class="col-sm-9">@Model.CreatedAt.ToLocalTime().ToString("d MMM yyyy HH:mm")@(Model.EnteredBy != null ? $", recorded by {Model.EnteredBy.FullName}" : "")</dd>
+        @if (Model.DecidedAt != null)
+        {
+            <dt class="col-sm-3">@Model.Status by</dt><dd class="col-sm-9">@Model.DecidedBy?.FullName on @Model.DecidedAt.Value.ToLocalTime().ToString("d MMM yyyy HH:mm")</dd>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.DecisionComment))
+        {
+            <dt class="col-sm-3">Comment</dt><dd class="col-sm-9">@Model.DecisionComment</dd>
+        }
+        @if (Model.CancelledAt != null)
+        {
+            <dt class="col-sm-3">Cancelled</dt><dd class="col-sm-9">@Model.CancelledAt.Value.ToLocalTime().ToString("d MMM yyyy HH:mm")</dd>
+        }
+    </dl>
+</div>
+<a class="btn btn-link mt-2 px-0" asp-action="Index">&larr; My leave</a>

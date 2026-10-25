@@ -1,0 +1,7 @@
+@if (TempData["FlashMessage"] is string flash)
+{
+    <div class="alert alert-@(TempData["FlashKind"] ?? "success") alert-dismissible fade show" role="alert">
+        @flash
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}

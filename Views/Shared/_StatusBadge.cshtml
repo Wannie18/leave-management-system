@@ -1,0 +1,11 @@
+@model LeaveStatus
+@{
+    var cls = Model switch
+    {
+        LeaveStatus.Approved => "bg-success",
+        LeaveStatus.Pending => "bg-warning text-dark",
+        LeaveStatus.Rejected => "bg-danger",
+        _ => "bg-secondary"
+    };
+}
+<span class="badge @cls">@Model</span>

@@ -1,0 +1,41 @@
+@model BalanceReportViewModel
+@{ ViewData["Title"] = "Balance report"; }
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h1 class="h3 mb-0">Leave balances, @Model.Year</h1>
+    <div class="d-flex gap-2 d-print-none">
+        <a class="btn btn-outline-success btn-sm" asp-route-year="@Model.Year" asp-route-leaveTypeId="@Model.LeaveTypeId" asp-route-departmentId="@Model.DepartmentId" asp-route-format="xlsx">Export to Excel</a>
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">Print / save as PDF</button>
+    </div>
+</div>
+<form method="get" class="row g-2 mb-3 d-print-none">
+    <div class="col-sm-2"><input name="year" type="number" value="@Model.Year" class="form-control" /></div>
+    <div class="col-sm-3"><select name="leaveTypeId" asp-items="Model.LeaveTypes" class="form-select"></select></div>
+    <div class="col-sm-3"><select name="departmentId" asp-items="Model.Departments" class="form-select"><option value="">All departments</option></select></div>
+    <div class="col-sm-2"><button class="btn btn-outline-primary w-100">Show</button></div>
+</form>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+            <thead><tr><th>Employee</th><th>Department</th><th class="text-end">Eligible</th><th class="text-end">Brought forward</th><th class="text-end">Adjustments</th><th class="text-end">Taken</th><th class="text-end">Pending</th><th class="text-end">Remaining</th></tr></thead>
+            <tbody>
+                @foreach (var r in Model.Rows)
+                {
+                    var b = r.Balance;
+                    <tr>
+                        <td><a asp-controller="Employees" asp-action="Balances" asp-route-id="@r.Employee.Id" asp-route-year="@Model.Year">@r.Employee.FullName</a></td>
+                        <td>@r.Employee.Department?.Name</td>
+                        <td class="text-end">@b.Entitlement.ToString("0.#")</td><td class="text-end">@b.BroughtForward.ToString("0.#")</td>
+                        <td class="text-end">@b.Adjustments.ToString("0.#")</td><td class="text-end">@b.Taken.ToString("0.#")</td>
+                        <td class="text-end">@b.Pending.ToString("0.#")</td><td class="text-end fw-semibold">@b.Remaining.ToString("0.#")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot class="fw-semibold">
+                <tr><td colspan="2">Total (@Model.Rows.Count staff)</td>
+                    <td class="text-end">@Model.Rows.Sum(r => r.Balance.Entitlement).ToString("0.#")</td><td class="text-end">@Model.Rows.Sum(r => r.Balance.BroughtForward).ToString("0.#")</td>
+                    <td class="text-end">@Model.Rows.Sum(r => r.Balance.Adjustments).ToString("0.#")</td><td class="text-end">@Model.Rows.Sum(r => r.Balance.Taken).ToString("0.#")</td>
+                    <td class="text-end">@Model.Rows.Sum(r => r.Balance.Pending).ToString("0.#")</td><td class="text-end">@Model.Rows.Sum(r => r.Balance.Remaining).ToString("0.#")</td></tr>
+            </tfoot>
+        </table>
+    </div>
+</div>

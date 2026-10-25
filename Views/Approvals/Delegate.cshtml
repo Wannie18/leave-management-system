@@ -1,0 +1,36 @@
+@model DelegationViewModel
+@{ ViewData["Title"] = "Delegate approvals"; }
+<h1 class="h3 mb-3">Delegate approvals</h1>
+<p class="text-muted">While you're away, the person you choose gets your team's leave requests and can approve or reject them. You can still decide them too.</p>
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card p-4">
+            <form asp-action="Delegate" method="post">
+                <div class="mb-3">
+                    <label asp-for="DelegateId" class="form-label required"></label>
+                    <select asp-for="DelegateId" asp-items="Model.People" class="form-select"><option value="">Choose...</option></select>
+                    <span asp-validation-for="DelegateId" class="text-danger small"></span>
+                </div>
+                <div class="row">
+                    <div class="col-6 mb-3"><label asp-for="FromDate" class="form-label required"></label><input asp-for="FromDate" type="date" class="form-control" /><span asp-validation-for="FromDate" class="text-danger small"></span></div>
+                    <div class="col-6 mb-3"><label asp-for="ToDate" class="form-label required"></label><input asp-for="ToDate" type="date" class="form-control" /><span asp-validation-for="ToDate" class="text-danger small"></span></div>
+                </div>
+                <button class="btn btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card p-3">
+            <h2 class="h6">Current and upcoming</h2>
+            @if (!Model.Existing.Any()) { <p class="text-muted small mb-0">None.</p> }
+            @foreach (var d in Model.Existing)
+            {
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <span>@d.Delegate!.FullName, @d.FromDate.ToString("d MMM") to @d.ToDate.ToString("d MMM yyyy")</span>
+                    <form asp-action="RemoveDelegation" asp-route-id="@d.Id" method="post"><button class="btn btn-sm btn-outline-danger">Remove</button></form>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

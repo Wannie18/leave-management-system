@@ -1,0 +1,37 @@
+@model TakenReportViewModel
+@{ ViewData["Title"] = "Leave report"; }
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h1 class="h3 mb-0">@Model.Status leave, @Model.From.ToString("d MMM yyyy") to @Model.To.ToString("d MMM yyyy")</h1>
+    <div class="d-flex gap-2 d-print-none">
+        <a class="btn btn-outline-success btn-sm" asp-route-from="@Model.From.ToString("yyyy-MM-dd")" asp-route-to="@Model.To.ToString("yyyy-MM-dd")" asp-route-leaveTypeId="@Model.LeaveTypeId" asp-route-departmentId="@Model.DepartmentId" asp-route-status="@Model.Status" asp-route-format="xlsx">Export to Excel</a>
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">Print / save as PDF</button>
+    </div>
+</div>
+<form method="get" class="row g-2 mb-3 d-print-none">
+    <div class="col-sm-2"><input name="from" type="date" value="@Model.From.ToString("yyyy-MM-dd")" class="form-control" /></div>
+    <div class="col-sm-2"><input name="to" type="date" value="@Model.To.ToString("yyyy-MM-dd")" class="form-control" /></div>
+    <div class="col-sm-2"><select name="leaveTypeId" asp-items="Model.LeaveTypes" class="form-select"><option value="">All types</option></select></div>
+    <div class="col-sm-2"><select name="departmentId" asp-items="Model.Departments" class="form-select"><option value="">All departments</option></select></div>
+    <div class="col-sm-2"><select name="status" asp-items="Html.GetEnumSelectList<LeaveStatus>()" class="form-select" asp-for="Status"></select></div>
+    <div class="col-sm-2"><button class="btn btn-outline-primary w-100">Show</button></div>
+</form>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+            <thead><tr><th>Employee</th><th>Department</th><th>Leave type</th><th>Dates</th><th class="text-end">Days</th><th>Submitted</th><th>Decided by</th></tr></thead>
+            <tbody>
+                @foreach (var r in Model.Rows)
+                {
+                    <tr>
+                        <td><a asp-controller="Leave" asp-action="Details" asp-route-id="@r.Id">@r.User!.FullName</a></td>
+                        <td>@r.User.Department?.Name</td><td>@r.LeaveType!.Name</td><td>@LeaveService.Dates(r)</td>
+                        <td class="text-end">@r.Days.ToString("0.#")</td><td>@r.CreatedAt.ToLocalTime().ToString("d MMM yyyy")</td>
+                        <td>@r.DecidedBy?.FullName @if (r.EscalatedAt != null && r.Status == LeaveStatus.Pending) { <span class="badge bg-danger">Escalated</span> }</td>
+                    </tr>
+                }
+                @if (!Model.Rows.Any()) { <tr><td colspan="7" class="text-muted">No leave matches these filters.</td></tr> }
+            </tbody>
+            <tfoot><tr class="fw-semibold"><td colspan="4">Total</td><td class="text-end">@Model.Rows.Sum(r => r.Days).ToString("0.#")</td><td colspan="2"></td></tr></tfoot>
+        </table>
+    </div>
+</div>

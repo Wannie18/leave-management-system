@@ -1,0 +1,24 @@
+@model LeaveType
+@{ ViewData["Title"] = Model.Id == 0 ? "Add leave type" : $"Edit {Model.Name}"; }
+<h1 class="h3 mb-3">@ViewData["Title"]</h1>
+<div class="card p-4 col-lg-8">
+    <form asp-action="EditLeaveType" method="post">
+        <input type="hidden" asp-for="Id" />
+        <div asp-validation-summary="ModelOnly" class="text-danger small"></div>
+        <div class="mb-3"><label asp-for="Name" class="form-label required"></label><input asp-for="Name" class="form-control" /><span asp-validation-for="Name" class="text-danger small"></span></div>
+        <div class="form-check mb-2"><input asp-for="TracksBalance" class="form-check-input" /><label asp-for="TracksBalance" class="form-check-label">Has a yearly allowance (untick for unpaid leave with no limit)</label></div>
+        <div class="row">
+            <div class="col-sm-6 mb-3"><label asp-for="DefaultDaysPerYear" class="form-label">Working days per year</label><input asp-for="DefaultDaysPerYear" type="number" step="0.5" class="form-control" /><div class="form-text">Prorated for staff who join part way through the year.</div></div>
+            <div class="col-sm-6 mb-3"><label asp-for="MinNoticeDays" class="form-label">Working days' notice required</label><input asp-for="MinNoticeDays" type="number" min="0" class="form-control" /><div class="form-text">0 lets staff record it after the fact (e.g. sick leave).</div></div>
+        </div>
+        <div class="form-check mb-2"><input asp-for="AllowCarryForward" class="form-check-input" /><label asp-for="AllowCarryForward" class="form-check-label">Unused days can be brought forward to next year</label></div>
+        <div class="mb-3 col-sm-6"><label asp-for="MaxCarryForwardDays" class="form-label">Maximum days brought forward</label><input asp-for="MaxCarryForwardDays" type="number" step="0.5" class="form-control" /></div>
+        <div class="form-check mb-2"><input asp-for="RequiresDocument" class="form-check-input" /><label asp-for="RequiresDocument" class="form-check-label">Supporting document required</label></div>
+        <div class="mb-3 col-sm-6"><label asp-for="DocumentRequiredAfterDays" class="form-label">...only when longer than (days)</label><input asp-for="DocumentRequiredAfterDays" type="number" step="0.5" class="form-control" /><div class="form-text">0 = always required.</div></div>
+        <div class="form-check mb-2"><input asp-for="AllowHalfDay" class="form-check-input" /><label asp-for="AllowHalfDay" class="form-check-label">Can be taken as a half day</label></div>
+        <div class="form-check mb-2"><input asp-for="ShowOnDashboard" class="form-check-input" /><label asp-for="ShowOnDashboard" class="form-check-label">Show this balance on everyone's home page</label></div>
+        <div class="form-check mb-3"><input asp-for="IsActive" class="form-check-input" /><label asp-for="IsActive" class="form-check-label">Active (staff can apply for it)</label></div>
+        <button class="btn btn-primary">Save</button>
+        <a asp-action="LeaveTypes" class="btn btn-link">Cancel</a>
+    </form>
+</div>

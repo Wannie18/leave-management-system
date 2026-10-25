@@ -1,0 +1,37 @@
+@model List<LeaveService.CarryForwardLine>
+@{ ViewData["Title"] = "Year-end carry forward"; int year = ViewBag.Year; }
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h1 class="h3 mb-0">Close @year, carry forward into @(year + 1)</h1>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-sm" asp-route-year="@(year - 1)">&larr; @(year - 1)</a>
+        <a class="btn btn-outline-secondary btn-sm" asp-route-year="@(year + 1)">@(year + 1) &rarr;</a>
+    </div>
+</div>
+<p class="text-muted">For leave types that allow carry forward, unused days up to the cap become "brought forward" in @(year + 1). The rest are forfeited. Pending requests are not counted as used. Running this again replaces the earlier figures.</p>
+<div class="card mb-3">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+            <thead><tr><th>Employee</th><th>Leave type</th><th class="text-end">Unused in @year</th><th class="text-end">Bring forward</th><th class="text-end">Forfeit</th><th class="text-end">Currently set</th></tr></thead>
+            <tbody>
+                @foreach (var l in Model)
+                {
+                    <tr class="@(l.CarryForward != l.CurrentlyBroughtForward ? "table-warning" : "")">
+                        <td>@l.User.FullName</td><td>@l.Type.Name</td>
+                        <td class="text-end">@l.Unused.ToString("0.#")</td>
+                        <td class="text-end fw-semibold">@l.CarryForward.ToString("0.#")</td>
+                        <td class="text-end">@l.Forfeited.ToString("0.#")</td>
+                        <td class="text-end">@l.CurrentlyBroughtForward.ToString("0.#")</td>
+                    </tr>
+                }
+                @if (!Model.Any()) { <tr><td colspan="6" class="text-muted">No unused days to carry forward.</td></tr> }
+            </tbody>
+        </table>
+    </div>
+</div>
+@if (Model.Any())
+{
+    <form asp-action="ApplyYearEnd" method="post" onsubmit="return confirm('Set brought-forward days for @(year + 1) as shown?');">
+        <input type="hidden" name="year" value="@year" />
+        <button class="btn btn-primary">Confirm and apply</button>
+    </form>
+}

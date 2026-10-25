@@ -1,0 +1,49 @@
+@model List<PublicHoliday>
+@{ ViewData["Title"] = "Public holidays"; int year = ViewBag.Year; }
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h1 class="h3 mb-0">Public holidays, @year</h1>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-sm" asp-route-year="@(year - 1)">&larr; @(year - 1)</a>
+        <a class="btn btn-outline-secondary btn-sm" asp-route-year="@(year + 1)">@(year + 1) &rarr;</a>
+    </div>
+</div>
+<p class="text-muted">Holidays on weekdays are not counted as leave days.</p>
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card p-4">
+            <h2 class="h6">Add a holiday</h2>
+            <form asp-action="AddHoliday" method="post">
+                <div class="mb-2"><label class="form-label small required">Date</label><input name="date" type="date" class="form-control" required value="@($"{year}-01-01")" /></div>
+                <div class="mb-3"><label class="form-label small required">Name</label><input name="name" class="form-control" required maxlength="100" /></div>
+                <button class="btn btn-primary btn-sm">Add</button>
+            </form>
+            @if (!Model.Any())
+            {
+                <form asp-action="CopyHolidays" method="post" class="mt-3">
+                    <input type="hidden" name="fromYear" value="@(year - 1)" />
+                    <button class="btn btn-outline-secondary btn-sm">Copy holidays from @(year - 1)</button>
+                </form>
+            }
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card p-3">
+            @if (!Model.Any()) { <p class="text-muted mb-0">No holidays entered for @year.</p> }
+            else
+            {
+                <table class="table table-sm mb-0">
+                    <tbody>
+                        @foreach (var h in Model)
+                        {
+                            <tr>
+                                <td>@h.Date.ToString("ddd d MMM")</td>
+                                <td>@h.Name</td>
+                                <td class="text-end"><form asp-action="DeleteHoliday" asp-route-id="@h.Id" method="post" onsubmit="return confirm('Remove this holiday?');"><button class="btn btn-sm btn-link text-danger">Remove</button></form></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,28 @@
+@model List<LeaveType>
+@{ ViewData["Title"] = "Leave types and rules"; }
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Leave types and rules</h1>
+    <a class="btn btn-primary btn-sm" asp-action="EditLeaveType">Add leave type</a>
+</div>
+<div class="alert alert-info small">The starting values are placeholders. Set the days, notice and carry-forward rules to match your leave policy.</div>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>Leave type</th><th class="text-end">Days per year</th><th>Carry forward</th><th>Notice</th><th>Document</th><th>Half days</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var t in Model)
+                {
+                    <tr class="@(t.IsActive ? "" : "text-muted")">
+                        <td>@t.Name @if (!t.IsActive) { <span class="badge bg-secondary">Inactive</span> }</td>
+                        <td class="text-end">@(t.TracksBalance ? t.DefaultDaysPerYear.ToString("0.#") : "No limit")</td>
+                        <td>@(t.AllowCarryForward ? $"Up to {t.MaxCarryForwardDays:0.#} days" : "No")</td>
+                        <td>@(t.MinNoticeDays > 0 ? $"{t.MinNoticeDays} working days" : "None")</td>
+                        <td>@(t.RequiresDocument ? (t.DocumentRequiredAfterDays > 0 ? $"Over {t.DocumentRequiredAfterDays:0.#} days" : "Always") : "No")</td>
+                        <td>@(t.AllowHalfDay ? "Yes" : "No")</td>
+                        <td class="text-end"><a class="btn btn-sm btn-outline-primary" asp-action="EditLeaveType" asp-route-id="@t.Id">Edit</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
