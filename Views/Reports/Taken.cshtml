@@ -24,7 +24,7 @@
                 {
                     <tr>
                         <td><a asp-controller="Leave" asp-action="Details" asp-route-id="@r.Id">@r.User!.FullName</a></td>
-                        <td>@r.User.Department?.Name</td><td>@r.LeaveType!.Name</td><td>@LeaveService.Dates(r)</td>
+                        <td>@r.User!.Department?.Name</td><td>@r.LeaveType!.Name</td><td>@LeaveService.Dates(r)</td>
                         <td class="text-end">@r.Days.ToString("0.#")</td><td>@r.CreatedAt.ToLocalTime().ToString("d MMM yyyy")</td>
                         <td>@r.DecidedBy?.FullName @if (r.EscalatedAt != null && r.Status == LeaveStatus.Pending) { <span class="badge bg-danger">Escalated</span> }</td>
                     </tr>

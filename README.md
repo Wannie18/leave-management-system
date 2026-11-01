@@ -40,7 +40,7 @@ You need the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
 dotnet run --environment Development
 ```
 
-Development mode uses a local SQLite file (`leave-dev.db`) instead of SQL Server, so nothing else needs installing. Sign in with `admin@yourdomain.org` / `ChangeMe!2026` (from `appsettings.json` > `Seed`).
+Development mode uses a local SQLite file (`leave-dev.db`) instead of SQL Server, so nothing else needs installing. Sign in with the email and password set under `Seed` in `appsettings.json` (`AdminEmail` / `AdminPassword`).
 
 ## Project layout
 
