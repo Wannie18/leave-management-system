@@ -9,15 +9,16 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#7b1e2b" />
     <title>@ViewData["Title"] - @org Leave</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
     <header class="d-print-none">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <nav class="navbar navbar-expand-lg navbar-dark brand-navbar mb-4">
             <div class="container">
-                <a class="navbar-brand fw-semibold" asp-controller="Home" asp-action="Index">@org Leave</a>
+                <a class="navbar-brand fw-semibold" asp-controller="Home" asp-action="Index"><span class="brand-mark">&#9632;</span> @org Leave</a>
                 @if (signedIn)
                 {
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,7 +58,7 @@
                                 <a class="nav-link" asp-controller="Notifications" asp-action="Index" title="Notifications">
                                     Notifications
                                     @{ var badge = await Component.InvokeAsync("NotificationBadge"); }
-                                    <span class="badge rounded-pill bg-warning text-dark">@badge</span>
+                                    <span class="badge rounded-pill">@badge</span>
                                 </a>
                             </li>
                             <li class="nav-item dropdown">
@@ -85,8 +86,8 @@
             @RenderBody()
         </main>
     </div>
-    <footer class="border-top py-3 text-muted small d-print-none">
-        <div class="container">@org Leave Management System</div>
+    <footer class="brand-footer py-3 small d-print-none">
+        <div class="container"><span class="brand-mark">&#9632;</span> @org Leave Management System</div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

@@ -1,5 +1,71 @@
 html { font-size: 15px; }
-body { background: #f6f7f9; }
+
+/* Organization colours: maroon, black and white */
+:root {
+  --brand-maroon: #7b1e2b;
+  --brand-maroon-dark: #5c1520;
+  --brand-maroon-rgb: 123, 30, 43;
+  --brand-maroon-light: #f4e4e6;
+  --brand-black: #1a1a1a;
+
+  --bs-primary: var(--brand-maroon);
+  --bs-primary-rgb: var(--brand-maroon-rgb);
+  --bs-link-color: var(--brand-maroon);
+  --bs-link-color-rgb: var(--brand-maroon-rgb);
+  --bs-link-hover-color: var(--brand-maroon-dark);
+  --bs-body-color: var(--brand-black);
+  --bs-focus-ring-color: rgba(var(--brand-maroon-rgb), .25);
+}
+
+/* Bootstrap 5.1 hard-codes its blue, so colours are set directly */
+a { color: var(--brand-maroon); }
+a:hover { color: var(--brand-maroon-dark); }
+.btn-primary { color: #fff; background-color: var(--brand-maroon); border-color: var(--brand-maroon); }
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .btn-check:checked + .btn-primary { color: #fff; background-color: var(--brand-maroon-dark); border-color: var(--brand-maroon-dark); }
+.btn-primary:focus, .btn-outline-primary:focus { box-shadow: 0 0 0 .25rem rgba(var(--brand-maroon-rgb), .35); }
+.btn-primary:disabled, .btn-primary.disabled { background-color: var(--brand-maroon); border-color: var(--brand-maroon); }
+.btn-outline-primary { color: var(--brand-maroon); border-color: var(--brand-maroon); }
+.btn-outline-primary:hover, .btn-outline-primary:active, .btn-outline-primary.active, .btn-check:checked + .btn-outline-primary { color: #fff; background-color: var(--brand-maroon); border-color: var(--brand-maroon); }
+.btn-link { color: var(--brand-maroon); }
+.bg-primary { background-color: var(--brand-maroon) !important; }
+.border-primary { border-color: var(--brand-maroon) !important; }
+.page-link { color: var(--brand-maroon); }
+.page-item.active .page-link { background-color: var(--brand-maroon); border-color: var(--brand-maroon); }
+.nav-pills .nav-link.active { background-color: var(--brand-maroon); }
+.nav-tabs .nav-link { color: var(--brand-maroon); }
+.list-group-item.active { background-color: var(--brand-maroon); border-color: var(--brand-maroon); }
+.form-switch .form-check-input:focus { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23b8707a'/%3e%3c/svg%3e"); }
+.form-control:focus, .form-select:focus, .form-check-input:focus { border-color: var(--brand-maroon); box-shadow: 0 0 0 .2rem rgba(var(--brand-maroon-rgb), .2); }
+.form-check-input:checked { background-color: var(--brand-maroon); border-color: var(--brand-maroon); }
+.text-primary { color: var(--brand-maroon) !important; }
+
+/* Header: maroon bar with a black rule */
+.brand-navbar { background: var(--brand-maroon); border-bottom: 4px solid var(--brand-black); }
+.brand-navbar .navbar-brand { color: #fff; letter-spacing: .02em; }
+.brand-navbar .navbar-brand .brand-mark { color: #fff; }
+.brand-navbar.navbar-dark .navbar-nav .nav-link { color: rgba(255,255,255,.9); }
+.brand-navbar.navbar-dark .navbar-nav .nav-link:hover, .brand-navbar.navbar-dark .navbar-nav .nav-link:focus, .brand-navbar.navbar-dark .navbar-nav .nav-link.show { color: #fff; text-decoration: underline; text-underline-offset: 6px; }
+.brand-navbar .badge { background: #fff !important; color: var(--brand-maroon) !important; }
+.dropdown-item:active { background: var(--brand-maroon); }
+
+/* Footer: black with a maroon rule */
+.brand-footer { background: var(--brand-black); color: rgba(255,255,255,.75); border-top: 4px solid var(--brand-maroon); }
+.brand-footer .brand-mark { color: #fff; }
+
+/* Cards and headings */
+h1, .h1, h2, .h2, h3, .h3 { color: var(--brand-black); }
+.card-accent { border-top: 4px solid var(--brand-maroon) !important; }
+.stat { color: var(--brand-maroon); }
+.table > thead th { border-bottom: 2px solid var(--brand-maroon); }
+.badge.bg-warning { background: var(--brand-black) !important; color: #fff !important; }
+.alert-warning { background: var(--brand-maroon-light); border-color: var(--brand-maroon); color: var(--brand-black); }
+
+/* Sign-in page */
+.login-card { border-top: 6px solid var(--brand-maroon) !important; }
+.login-card h1 { color: var(--brand-maroon); }
+
+body { background: #f7f5f2; display: flex; flex-direction: column; min-height: 100vh; }
+body > .container { flex: 1 0 auto; }
 .card { border: 0; box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.08); }
 .stat { font-size: 1.9rem; font-weight: 600; line-height: 1.1; }
 .table td, .table th { vertical-align: middle; }
@@ -10,14 +76,20 @@ body { background: #f6f7f9; }
 .cal { font-size: .8rem; }
 .cal th, .cal td { padding: 2px 3px !important; text-align: center; min-width: 26px; }
 .cal td.name, .cal th.name { text-align: left; min-width: 160px; position: sticky; left: 0; background: #fff; z-index: 1; }
-.wk { background: #eceff3; }
-.hol { background: #ffe8b3; }
-.on-approved { background: #198754; color: #fff; }
-.on-pending { background: repeating-linear-gradient(45deg, #ffc107, #ffc107 4px, #ffe083 4px, #ffe083 8px); }
-.cal .today { outline: 2px solid #0d6efd; outline-offset: -2px; }
+/* Bootstrap 5.1 sets a background colour on every table cell, so the calendar needs the extra specificity */
+.wk, .table.cal > :not(caption) > * > .wk { background-color: #eceff3; }
+.hol, .table.cal > :not(caption) > * > .hol { background-color: #e9e4dc; }
+.on-approved, .table.cal > :not(caption) > * > .on-approved { background-color: var(--brand-maroon); color: #fff; }
+.on-pending, .table.cal > :not(caption) > * > .on-pending { background: repeating-linear-gradient(45deg, rgba(var(--brand-maroon-rgb), .45) 0 2px, var(--brand-maroon-light) 2px 7px); }
+.cal .today { outline: 2px solid var(--brand-black); outline-offset: -2px; }
 
 @media print {
-  body { background: #fff; }
+  body { background: #fff; display: block; }
   .card { box-shadow: none; }
   a[href]::after { content: none; }
 }
+
+/* Bootstrap 5.1 has no text-bg-* helpers, and its table-warning rows are yellow */
+.text-bg-light { background-color: #f8f9fa !important; color: var(--brand-black) !important; }
+.table-warning, .table > :not(caption) > .table-warning > * { --bs-table-bg: var(--brand-maroon-light); --bs-table-accent-bg: var(--brand-maroon-light); background-color: var(--brand-maroon-light); }
+.text-warning-emphasis { color: var(--brand-maroon) !important; }
