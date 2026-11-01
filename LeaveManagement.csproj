@@ -8,6 +8,14 @@
     <UserSecretsId>aspnet-LeaveManagement-1c519ad9-6aa1-45b5-ae36-c2dd6316a7bf</UserSecretsId>
   </PropertyGroup>
 
+  <!-- The test project lives in tests/ and builds separately. -->
+  <ItemGroup>
+    <Compile Remove="tests/**" />
+    <Content Remove="tests/**" />
+    <None Remove="tests/**" />
+    <EmbeddedResource Remove="tests/**" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.104.2" />

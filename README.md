@@ -42,6 +42,14 @@ dotnet run --environment Development
 
 Development mode uses a local SQLite file (`leave-dev.db`) instead of SQL Server, so nothing else needs installing. Sign in with `admin@yourdomain.org` / `ChangeMe!2026` (from `appsettings.json` > `Seed`).
 
+## Running the tests
+
+```
+dotnet test tests/LeaveManagement.Tests
+```
+
+44 automated tests check the leave rules against a temporary in-memory database: working-day counting, public holidays, half days, prorated entitlement, balance checks, overlaps, notice periods, document rules, approval and rejection, delegation, routing to HR, cancellation, and year-end carry forward. They don't touch your real database.
+
 ## Project layout
 
 ```
@@ -50,6 +58,7 @@ Services/      LeaveService (all leave rules), ImportService, notifications, ema
 Models/        Database entities and form models
 Data/          Database context, first-run setup, SQL Server migrations
 Views/         Pages (Razor + Bootstrap 5)
+tests/         Automated tests (xUnit)
 ```
 
 ## Changing the database
