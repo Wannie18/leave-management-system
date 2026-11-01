@@ -7,20 +7,33 @@ using Microsoft.Extensions.Options;
 
 namespace LeaveManagement.Infrastructure;
 
-/// <summary>Sends users with a temporary password to the change-password page before anything else.</summary>
+/// <summary>
+/// Signs out anyone whose account was deleted or deactivated while they were signed in,
+/// and sends users with a temporary password to the change-password page before anything else.
+/// </summary>
 public class ForcePasswordChangeFilter : IAsyncActionFilter
 {
     private readonly UserManager<ApplicationUser> _users;
+    private readonly SignInManager<ApplicationUser> _signIn;
 
-    public ForcePasswordChangeFilter(UserManager<ApplicationUser> users) => _users = users;
+    public ForcePasswordChangeFilter(UserManager<ApplicationUser> users, SignInManager<ApplicationUser> signIn)
+    {
+        _users = users;
+        _signIn = signIn;
+    }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        if (context.HttpContext.User.Identity?.IsAuthenticated == true
-            && context.Controller is not Controllers.AccountController)
+        if (context.HttpContext.User.Identity?.IsAuthenticated == true)
         {
             var user = await _users.GetUserAsync(context.HttpContext.User);
-            if (user is { MustChangePassword: true })
+            if (user == null || !user.IsActive)
+            {
+                await _signIn.SignOutAsync();
+                context.Result = new RedirectToActionResult("Login", "Account", null);
+                return;
+            }
+            if (user.MustChangePassword && context.Controller is not Controllers.AccountController)
             {
                 context.Result = new RedirectToActionResult("ChangePassword", "Account", null);
                 return;
