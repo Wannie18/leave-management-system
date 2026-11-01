@@ -76,10 +76,11 @@ body > .container { flex: 1 0 auto; }
 .cal { font-size: .8rem; }
 .cal th, .cal td { padding: 2px 3px !important; text-align: center; min-width: 26px; }
 .cal td.name, .cal th.name { text-align: left; min-width: 160px; position: sticky; left: 0; background: #fff; z-index: 1; }
-.wk { background: #eceff3; }
-.hol { background: #e9e4dc; }
-.on-approved { background: var(--brand-maroon); color: #fff; }
-.on-pending { background: repeating-linear-gradient(45deg, rgba(var(--brand-maroon-rgb), .45) 0 2px, var(--brand-maroon-light) 2px 7px); }
+/* Bootstrap 5.1 sets a background colour on every table cell, so the calendar needs the extra specificity */
+.wk, .table.cal > :not(caption) > * > .wk { background-color: #eceff3; }
+.hol, .table.cal > :not(caption) > * > .hol { background-color: #e9e4dc; }
+.on-approved, .table.cal > :not(caption) > * > .on-approved { background-color: var(--brand-maroon); color: #fff; }
+.on-pending, .table.cal > :not(caption) > * > .on-pending { background: repeating-linear-gradient(45deg, rgba(var(--brand-maroon-rgb), .45) 0 2px, var(--brand-maroon-light) 2px 7px); }
 .cal .today { outline: 2px solid var(--brand-black); outline-offset: -2px; }
 
 @media print {
@@ -87,3 +88,8 @@ body > .container { flex: 1 0 auto; }
   .card { box-shadow: none; }
   a[href]::after { content: none; }
 }
+
+/* Bootstrap 5.1 has no text-bg-* helpers, and its table-warning rows are yellow */
+.text-bg-light { background-color: #f8f9fa !important; color: var(--brand-black) !important; }
+.table-warning, .table > :not(caption) > .table-warning > * { --bs-table-bg: var(--brand-maroon-light); --bs-table-accent-bg: var(--brand-maroon-light); background-color: var(--brand-maroon-light); }
+.text-warning-emphasis { color: var(--brand-maroon) !important; }
