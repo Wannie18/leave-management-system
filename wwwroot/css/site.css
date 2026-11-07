@@ -63,10 +63,11 @@ h1, .h1, h2, .h2, h3, .h3 { color: var(--brand-black); }
 .alert-warning { background: var(--brand-maroon-light); border-color: var(--brand-maroon); color: var(--brand-black); }
 
 /* Sign-in page */
-.login-card { border: 0; box-shadow: 0 .25rem 1rem rgba(26,26,26,.12); }
-/* The logo is white and red on a transparent background, so it always sits on maroon */
-.login-logo-panel { background: var(--brand-maroon); border-bottom: 4px solid var(--brand-black); padding: 1.75rem 1.5rem 1.5rem; text-align: center; }
-.login-logo-panel img { width: 100%; max-width: 240px; height: auto; }
+.login-card { border: 0; border-top: 6px solid var(--brand-maroon) !important; box-shadow: 0 .25rem 1rem rgba(26,26,26,.12); }
+/* Logo versions: the white one on maroon or black, the black one on white or light backgrounds */
+.login-logo { padding: 1.75rem 1.5rem .25rem; text-align: center; }
+.login-logo img { width: 100%; max-width: 220px; height: auto; }
+.print-logo img { height: 64px; width: auto; margin-bottom: 1rem; }
 .login-card h1 { color: var(--brand-maroon); }
 
 body { background: #f7f5f2; display: flex; flex-direction: column; min-height: 100vh; }
