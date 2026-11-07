@@ -42,7 +42,9 @@ a:hover { color: var(--brand-maroon-dark); }
 /* Header: maroon bar with a black rule */
 .brand-navbar { background: var(--brand-maroon); border-bottom: 4px solid var(--brand-black); }
 .brand-navbar .navbar-brand { color: #fff; letter-spacing: .02em; }
-.brand-navbar .navbar-brand .brand-mark { color: #fff; }
+.brand-navbar .navbar-brand { gap: .6rem; padding-top: .25rem; padding-bottom: .25rem; }
+.brand-logo { height: 52px; width: auto; }
+@media (max-width: 575.98px) { .brand-logo { height: 42px; } }
 .brand-navbar.navbar-dark .navbar-nav .nav-link { color: rgba(255,255,255,.9); }
 .brand-navbar.navbar-dark .navbar-nav .nav-link:hover, .brand-navbar.navbar-dark .navbar-nav .nav-link:focus, .brand-navbar.navbar-dark .navbar-nav .nav-link.show { color: #fff; text-decoration: underline; text-underline-offset: 6px; }
 .brand-navbar .badge { background: #fff !important; color: var(--brand-maroon) !important; }
@@ -50,7 +52,7 @@ a:hover { color: var(--brand-maroon-dark); }
 
 /* Footer: black with a maroon rule */
 .brand-footer { background: var(--brand-black); color: rgba(255,255,255,.75); border-top: 4px solid var(--brand-maroon); }
-.brand-footer .brand-mark { color: #fff; }
+.footer-logo { height: 40px; width: auto; }
 
 /* Cards and headings */
 h1, .h1, h2, .h2, h3, .h3 { color: var(--brand-black); }
@@ -61,7 +63,10 @@ h1, .h1, h2, .h2, h3, .h3 { color: var(--brand-black); }
 .alert-warning { background: var(--brand-maroon-light); border-color: var(--brand-maroon); color: var(--brand-black); }
 
 /* Sign-in page */
-.login-card { border-top: 6px solid var(--brand-maroon) !important; }
+.login-card { border: 0; box-shadow: 0 .25rem 1rem rgba(26,26,26,.12); }
+/* The logo is white and red on a transparent background, so it always sits on maroon */
+.login-logo-panel { background: var(--brand-maroon); border-bottom: 4px solid var(--brand-black); padding: 1.75rem 1.5rem 1.5rem; text-align: center; }
+.login-logo-panel img { width: 100%; max-width: 240px; height: auto; }
 .login-card h1 { color: var(--brand-maroon); }
 
 body { background: #f7f5f2; display: flex; flex-direction: column; min-height: 100vh; }
