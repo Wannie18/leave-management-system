@@ -39,12 +39,23 @@ a:hover { color: var(--brand-maroon-dark); }
 .form-check-input:checked { background-color: var(--brand-maroon); border-color: var(--brand-maroon); }
 .text-primary { color: var(--brand-maroon) !important; }
 
-/* Header: maroon bar with a black rule */
-.brand-navbar { background: var(--brand-maroon); border-bottom: 4px solid var(--brand-black); }
-.brand-navbar .navbar-brand { color: #fff; letter-spacing: .02em; }
-.brand-navbar.navbar-dark .navbar-nav .nav-link { color: rgba(255,255,255,.9); }
-.brand-navbar.navbar-dark .navbar-nav .nav-link:hover, .brand-navbar.navbar-dark .navbar-nav .nav-link:focus, .brand-navbar.navbar-dark .navbar-nav .nav-link.show { color: #fff; text-decoration: underline; text-underline-offset: 6px; }
-.brand-navbar .badge { background: #fff !important; color: var(--brand-maroon) !important; }
+/* Header: maroon title band with the system name, black menu bar underneath */
+.title-band { background: #7b1e2b; color: #fff; }
+.site-title, .site-title:hover { color: #fff; text-decoration: none; display: block; line-height: 1.2; }
+.site-title-name { display: block; font-size: 1.6rem; font-weight: 600; letter-spacing: .01em; }
+.site-title-sub { display: block; font-size: .85rem; letter-spacing: .18em; text-transform: uppercase; opacity: .85; margin-top: .15rem; }
+.account-nav .nav-link { color: #fff; padding: .25rem .6rem; }
+.account-nav .nav-link:hover, .account-nav .nav-link:focus, .account-nav .nav-link.show { color: #fff; text-decoration: underline; text-underline-offset: 6px; }
+.account-nav .badge { background: #fff !important; color: #7b1e2b !important; }
+.menu-bar { background: #1a1a1a; }
+.menu-bar.navbar-dark .navbar-nav .nav-link { color: #fff; padding: .7rem 1.1rem .7rem 0; }
+.menu-bar.navbar-dark .navbar-nav .nav-link:hover, .menu-bar.navbar-dark .navbar-nav .nav-link:focus, .menu-bar.navbar-dark .navbar-nav .nav-link.show { color: #fff; text-decoration: underline; text-underline-offset: 6px; }
+.menu-bar .navbar-toggler { border: 0; color: #fff; padding: .55rem 0; font-size: 1rem; }
+.menu-bar .navbar-toggler:focus { box-shadow: none; }
+@media (max-width: 575.98px) {
+  .site-title-name { font-size: 1.2rem; }
+  .account-nav { width: 100%; margin-left: -.6rem; }
+}
 .dropdown-item:active { background: var(--brand-maroon); }
 
 /* Footer: black with a maroon rule */
