@@ -1,14 +1,14 @@
 @model BalanceReportViewModel
 @{ ViewData["Title"] = "Balance report"; }
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-    <h1 class="h3 mb-0">Leave balances, @Model.Year</h1>
+    <h1 class="h3 mb-0">Leave balances, @LeaveYear.Label(Model.Year)</h1>
     <div class="d-flex gap-2 d-print-none">
         <a class="btn btn-outline-success btn-sm" asp-route-year="@Model.Year" asp-route-leaveTypeId="@Model.LeaveTypeId" asp-route-departmentId="@Model.DepartmentId" asp-route-format="xlsx">Export to Excel</a>
         <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">Print / save as PDF</button>
     </div>
 </div>
 <form method="get" class="row g-2 mb-3 d-print-none">
-    <div class="col-sm-2"><input name="year" type="number" value="@Model.Year" class="form-control" /></div>
+    <div class="col-sm-2"><select name="year" class="form-select" aria-label="Leave year">@for (var y = Math.Max(Model.Year, LeaveYear.Current) + 1; y >= Math.Min(Model.Year, LeaveYear.Current) - 5; y--) { <option value="@y" selected="@(y == Model.Year)">@LeaveYear.Label(y)</option> }</select></div>
     <div class="col-sm-3"><select name="leaveTypeId" asp-items="Model.LeaveTypes" class="form-select"></select></div>
     <div class="col-sm-3"><select name="departmentId" asp-items="Model.Departments" class="form-select"><option value="">All departments</option></select></div>
     <div class="col-sm-2"><button class="btn btn-outline-primary w-100">Show</button></div>

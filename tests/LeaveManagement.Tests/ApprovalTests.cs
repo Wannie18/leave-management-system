@@ -35,7 +35,7 @@ public class ApprovalTests
         var result = await h.Leave.DecideAsync(id, boss, approve: true, comment: null);
 
         Assert.True(result.Ok, result.Error);
-        var balance = await h.Leave.GetBalanceAsync(staff, h.Annual, 2030);
+        var balance = await h.Leave.GetBalanceAsync(staff, h.Annual, 2029);
         Assert.Equal(5m, balance.Taken);
         Assert.Equal(0m, balance.Pending);
         Assert.Equal(19m, balance.Remaining);
@@ -61,7 +61,7 @@ public class ApprovalTests
         var result = await h.Leave.DecideAsync(id, boss, approve: false, comment: "Busy week");
 
         Assert.True(result.Ok, result.Error);
-        var balance = await h.Leave.GetBalanceAsync(staff, h.Annual, 2030);
+        var balance = await h.Leave.GetBalanceAsync(staff, h.Annual, 2029);
         Assert.Equal(24m, balance.Remaining);
         Assert.Equal("Busy week", (await h.Db.LeaveRequests.SingleAsync()).DecisionComment);
     }

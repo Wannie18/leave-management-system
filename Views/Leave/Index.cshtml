@@ -5,10 +5,10 @@
     var balances = (List<BalanceSummary>)ViewBag.Balances;
 }
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-    <h1 class="h3 mb-0">My leave, @year</h1>
+    <h1 class="h3 mb-0">My leave, @LeaveYear.Label(year)</h1>
     <div class="d-flex gap-2">
-        <a class="btn btn-outline-secondary btn-sm" asp-route-year="@(year - 1)">&larr; @(year - 1)</a>
-        <a class="btn btn-outline-secondary btn-sm" asp-route-year="@(year + 1)">@(year + 1) &rarr;</a>
+        <a class="btn btn-outline-secondary btn-sm" asp-route-year="@(year - 1)">&larr; @LeaveYear.Label(year - 1)</a>
+        <a class="btn btn-outline-secondary btn-sm" asp-route-year="@(year + 1)">@LeaveYear.Label(year + 1) &rarr;</a>
         <a class="btn btn-primary btn-sm" asp-action="Apply">Apply for leave</a>
     </div>
 </div>
@@ -38,7 +38,7 @@
 
 <div class="card p-3">
     <h2 class="h6">Requests</h2>
-    @if (!Model.Any()) { <p class="text-muted mb-0">No leave requests in @year.</p> }
+    @if (!Model.Any()) { <p class="text-muted mb-0">No leave requests in @LeaveYear.Label(year).</p> }
     else
     {
         <div class="table-responsive">

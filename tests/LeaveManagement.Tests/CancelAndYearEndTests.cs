@@ -19,7 +19,7 @@ public class CancelAndYearEndTests
 
         Assert.True(result.Ok, result.Error);
         Assert.Equal(LeaveStatus.Cancelled, (await h.Db.LeaveRequests.SingleAsync()).Status);
-        Assert.Equal(24m, (await h.Leave.GetBalanceAsync(staff, h.Annual, 2030)).Remaining);
+        Assert.Equal(24m, (await h.Leave.GetBalanceAsync(staff, h.Annual, 2029)).Remaining);
         Assert.True(await h.Db.Notifications.AnyAsync(n => n.UserId == boss.Id && n.Message.Contains("cancelled")));
     }
 
@@ -73,14 +73,14 @@ public class CancelAndYearEndTests
         // Take 10 of 24 days: 14 unused, the cap is 5.
         await h.ApplyAsync(staff, h.Annual, Monday, Monday.AddDays(11), byHr: true, actor: hr);
 
-        var preview = await h.Leave.PreviewYearEndAsync(2030);
+        var preview = await h.Leave.PreviewYearEndAsync(2029);
         var line = Assert.Single(preview, l => l.User.Id == staff.Id);
         Assert.Equal(14m, line.Unused);
         Assert.Equal(5m, line.CarryForward);
         Assert.Equal(9m, line.Forfeited);
 
-        await h.Leave.ApplyYearEndAsync(2030, hr);
-        var next = await h.Leave.GetBalanceAsync(staff, h.Annual, 2031);
+        await h.Leave.ApplyYearEndAsync(2029, hr);
+        var next = await h.Leave.GetBalanceAsync(staff, h.Annual, 2030);
         Assert.Equal(5m, next.BroughtForward);
         Assert.Equal(29m, next.Available);
     }
@@ -90,7 +90,7 @@ public class CancelAndYearEndTests
     {
         await using var h = await TestHost.CreateAsync();
         await h.AddUserAsync("Sam Staff");
-        var preview = await h.Leave.PreviewYearEndAsync(2030);
+        var preview = await h.Leave.PreviewYearEndAsync(2029);
         Assert.All(preview, l => Assert.Equal(h.Annual.Id, l.Type.Id));
     }
 
@@ -101,9 +101,9 @@ public class CancelAndYearEndTests
         var hr = await h.AddUserAsync("Hana HR", hr: true);
         var staff = await h.AddUserAsync("Sam Staff");
 
-        await h.Leave.ApplyYearEndAsync(2030, hr);
-        await h.Leave.ApplyYearEndAsync(2030, hr);
+        await h.Leave.ApplyYearEndAsync(2029, hr);
+        await h.Leave.ApplyYearEndAsync(2029, hr);
 
-        Assert.Equal(5m, (await h.Leave.GetBalanceAsync(staff, h.Annual, 2031)).BroughtForward);
+        Assert.Equal(5m, (await h.Leave.GetBalanceAsync(staff, h.Annual, 2030)).BroughtForward);
     }
 }

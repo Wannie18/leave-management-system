@@ -113,7 +113,8 @@ public class SetupController : AppController
 
     public async Task<IActionResult> YearEnd(int? year)
     {
-        var y = year ?? DateTime.Today.Year - (DateTime.Today.Month <= 6 ? 1 : 0);
+        // Early in a leave year (July to December) the year to close is the one that just ended.
+        var y = year ?? LeaveYear.Current - (DateTime.Today.Month >= LeaveYear.StartMonth ? 1 : 0);
         ViewBag.Year = y;
         return View(await _leave.PreviewYearEndAsync(y));
     }
@@ -122,7 +123,7 @@ public class SetupController : AppController
     public async Task<IActionResult> ApplyYearEnd(int year)
     {
         var count = await _leave.ApplyYearEndAsync(year, await CurrentUserAsync());
-        Flash($"Days brought forward into {year + 1} have been set for {count} balances.");
+        Flash($"Days brought forward into the {LeaveYear.Label(year + 1)} leave year have been set for {count} balances.");
         return RedirectToAction(nameof(YearEnd), new { year });
     }
 
@@ -131,7 +132,7 @@ public class SetupController : AppController
     public async Task<IActionResult> Import()
     {
         ViewBag.LeaveTypes = new SelectList(await _db.LeaveTypes.Where(t => t.TracksBalance).ToListAsync(), "Id", "Name");
-        ViewBag.Year = DateTime.Today.Year;
+        ViewBag.Year = LeaveYear.Current;
         return View(new List<ImportRow>());
     }
 

@@ -88,15 +88,17 @@ public class LeaveService
 
     // ---------- Balances ----------
 
-    /// <summary>Entitlement for a year, prorated by months worked for staff who join part way through (BR-08).</summary>
+    /// <summary>Entitlement for a leave year (1 July to 30 June), prorated by months worked for staff who join or leave part way through (BR-08).</summary>
     public static decimal ProratedEntitlement(LeaveType type, ApplicationUser user, int year)
     {
         if (!type.TracksBalance) return 0;
-        if (user.StartDate.Year > year) return 0;
+        if (user.StartDate.Date > LeaveYear.End(year)) return 0;
+        if (user.EndDate.HasValue && user.EndDate.Value.Date < LeaveYear.Start(year)) return 0;
 
-        var months = 12m;
-        if (user.StartDate.Year == year) months = 12 - (user.StartDate.Month - 1);
-        if (user.EndDate.HasValue && user.EndDate.Value.Year == year) months -= 12 - user.EndDate.Value.Month;
+        // The month someone joins or leaves counts as a full month.
+        var first = user.StartDate.Date >= LeaveYear.Start(year) ? LeaveYear.MonthIndex(user.StartDate, year) : 0;
+        var last = user.EndDate.HasValue && user.EndDate.Value.Date <= LeaveYear.End(year) ? LeaveYear.MonthIndex(user.EndDate.Value, year) : 11;
+        var months = (decimal)(last - first + 1);
         if (months <= 0) return 0;
 
         var raw = type.DefaultDaysPerYear * months / 12m;
@@ -129,8 +131,10 @@ public class LeaveService
             .Select(a => a.Days)
             .ToListAsync()).Sum();
 
+        var from = LeaveYear.Start(year);
+        var to = LeaveYear.End(year);
         var requests = await _db.LeaveRequests
-            .Where(r => r.UserId == user.Id && r.LeaveTypeId == type.Id && r.StartDate.Year == year
+            .Where(r => r.UserId == user.Id && r.LeaveTypeId == type.Id && r.StartDate >= from && r.StartDate <= to
                         && (r.Status == LeaveStatus.Approved || r.Status == LeaveStatus.Pending))
             .Select(r => new { r.Status, r.Days })
             .ToListAsync();
@@ -213,7 +217,7 @@ public class LeaveService
         var start = app.StartDate.Date;
         var end = app.EndDate.Date;
         if (end < start) return ServiceResult.Fail("The end date must be on or after the start date.");
-        if (start.Year != end.Year) return ServiceResult.Fail("Leave cannot cross the end of the leave year. Please submit two requests: one ending 31 December and one starting 1 January.");
+        if (LeaveYear.Of(start) != LeaveYear.Of(end)) return ServiceResult.Fail("Leave cannot cross the end of the leave year. Please submit two requests: one ending 30 June and one starting 1 July.");
 
         var halfDay = app.IsHalfDay && start == end;
         if (halfDay && !type.AllowHalfDay) return ServiceResult.Fail($"{type.Name} cannot be taken as a half day.");
@@ -242,9 +246,10 @@ public class LeaveService
 
         if (type.TracksBalance)
         {
-            var balance = await GetBalanceAsync(employee, type, start.Year);
+            var leaveYear = LeaveYear.Of(start);
+            var balance = await GetBalanceAsync(employee, type, leaveYear);
             if (days > balance.Remaining)
-                return ServiceResult.Fail($"This request is {days:0.#} working days but only {balance.Remaining:0.#} days of {type.Name.ToLower()} remain for {start.Year}.");
+                return ServiceResult.Fail($"This request is {days:0.#} working days but only {balance.Remaining:0.#} days of {type.Name.ToLower()} remain for the {LeaveYear.Label(leaveYear)} leave year.");
         }
 
         var request = new LeaveRequest
@@ -396,7 +401,7 @@ public class LeaveService
             next.BroughtForward = line.CarryForward;
         }
         await _db.SaveChangesAsync();
-        await _audit.LogAsync(actor, "YearEndCarryForward", $"Closed {closingYear}: brought forward set for {lines.Count} balances into {closingYear + 1}.");
+        await _audit.LogAsync(actor, "YearEndCarryForward", $"Closed leave year {LeaveYear.Label(closingYear)}: brought forward set for {lines.Count} balances into {LeaveYear.Label(closingYear + 1)}.");
         return lines.Count;
     }
 

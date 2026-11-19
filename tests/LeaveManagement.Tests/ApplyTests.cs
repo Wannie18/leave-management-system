@@ -30,7 +30,7 @@ public class ApplyTests
         var staff = await h.AddUserAsync("Sam Staff", await h.AddUserAsync("Bea Boss"));
         await h.ApplyAsync(staff, h.Annual, Monday, Monday.AddDays(4));
 
-        var balance = await h.Leave.GetBalanceAsync(staff, h.Annual, 2030);
+        var balance = await h.Leave.GetBalanceAsync(staff, h.Annual, 2029); // March 2030 is in leave year 2029/30
         Assert.Equal(24m, balance.Entitlement);
         Assert.Equal(5m, balance.Pending);
         Assert.Equal(19m, balance.Remaining);
@@ -98,13 +98,26 @@ public class ApplyTests
     }
 
     [Fact]
-    public async Task A_request_cannot_cross_the_end_of_the_year()
+    public async Task A_request_cannot_cross_the_end_of_the_leave_year_on_30_June()
     {
         await using var h = await TestHost.CreateAsync();
         var staff = await h.AddUserAsync("Sam Staff");
-        var result = await h.ApplyAsync(staff, h.Annual, new DateTime(2030, 12, 30), new DateTime(2031, 1, 3));
+        var result = await h.ApplyAsync(staff, h.Annual, new DateTime(2030, 6, 28), new DateTime(2030, 7, 2));
         Assert.False(result.Ok);
         Assert.Contains("two requests", result.Error);
+        Assert.Contains("30 June", result.Error);
+    }
+
+    [Fact]
+    public async Task A_request_can_run_over_New_Year_because_it_stays_in_one_leave_year()
+    {
+        await using var h = await TestHost.CreateAsync();
+        var hr = await h.AddUserAsync("Hana HR", hr: true);
+        var staff = await h.AddUserAsync("Sam Staff");
+        var result = await h.ApplyAsync(staff, h.Annual, new DateTime(2030, 12, 30), new DateTime(2031, 1, 3), byHr: true, actor: hr);
+        Assert.True(result.Ok, result.Error);
+        var balance = await h.Leave.GetBalanceAsync(staff, h.Annual, 2030);
+        Assert.Equal(5m, balance.Taken + balance.Pending); // Monday 30 December to Friday 3 January
     }
 
     [Fact]
