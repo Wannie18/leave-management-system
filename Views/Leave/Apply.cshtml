@@ -71,7 +71,7 @@
     </div>
     <div class="col-lg-5">
         <div class="card p-3">
-            <h2 class="h6">@(Model.OnBehalf ? "Employee's balance" : "Your balance") this year</h2>
+            <h2 class="h6">@(Model.OnBehalf ? "Employee's balance" : "Your balance") this leave year</h2>
             @if (!Model.Balances.Any()) { <p class="text-muted small mb-0">Choose an employee to see their balance.</p> }
             else
             {

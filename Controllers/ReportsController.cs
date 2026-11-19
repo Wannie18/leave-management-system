@@ -56,7 +56,7 @@ public class ReportsController : AppController
     [Authorize(Roles = Roles.HROrAdmin)]
     public async Task<IActionResult> Balances(int? year, int? leaveTypeId, int? departmentId, string? format)
     {
-        var model = new BalanceReportViewModel { Year = year ?? DateTime.Today.Year, DepartmentId = departmentId };
+        var model = new BalanceReportViewModel { Year = year ?? LeaveYear.Current, DepartmentId = departmentId };
         var types = await _db.LeaveTypes.Where(t => t.IsActive && t.TracksBalance).OrderBy(t => t.Id).ToListAsync();
         var type = types.FirstOrDefault(t => t.Id == leaveTypeId) ?? types.First();
         model.LeaveTypeId = type.Id;
@@ -71,7 +71,8 @@ public class ReportsController : AppController
         if (format == "xlsx")
         {
             using var wb = new XLWorkbook();
-            var ws = wb.AddWorksheet($"{type.Name} {model.Year}".Length > 31 ? $"Balances {model.Year}" : $"{type.Name} {model.Year}");
+            var label = LeaveYear.FileLabel(model.Year);
+            var ws = wb.AddWorksheet($"{type.Name} {label}".Length > 31 ? $"Balances {label}" : $"{type.Name} {label}");
             string[] head = { "Employee", "Employee No.", "Department", "Eligible days", "Brought forward", "Adjustments", "Days taken", "Pending", "Remaining" };
             for (var i = 0; i < head.Length; i++) ws.Cell(1, i + 1).Value = head[i];
             var r = 2;
@@ -88,7 +89,7 @@ public class ReportsController : AppController
                 ws.Cell(r, 9).Value = row.Balance.Remaining;
                 r++;
             }
-            return Excel(wb, $"leave-balances-{model.Year}.xlsx");
+            return Excel(wb, $"leave-balances-{LeaveYear.FileLabel(model.Year)}.xlsx");
         }
 
         return View(model);
@@ -102,8 +103,8 @@ public class ReportsController : AppController
         var today = DateTime.Today;
         var model = new TakenReportViewModel
         {
-            From = from ?? new DateTime(today.Year, 1, 1),
-            To = to ?? new DateTime(today.Year, 12, 31),
+            From = from ?? LeaveYear.Start(LeaveYear.Current),
+            To = to ?? LeaveYear.End(LeaveYear.Current),
             LeaveTypeId = leaveTypeId, DepartmentId = departmentId, Status = status ?? LeaveStatus.Approved
         };
         model.LeaveTypes = new SelectList(await _db.LeaveTypes.OrderBy(t => t.Id).ToListAsync(), "Id", "Name", leaveTypeId);

@@ -55,7 +55,7 @@ public class ApprovalsController : AppController
         {
             Request = request,
             CanDecide = canDecide,
-            Balance = request.LeaveType!.TracksBalance ? await _leave.GetBalanceAsync(request.User!, request.LeaveType!, request.StartDate.Year) : null,
+            Balance = request.LeaveType!.TracksBalance ? await _leave.GetBalanceAsync(request.User!, request.LeaveType!, LeaveYear.Of(request.StartDate)) : null,
             TeamOverlaps = overlaps
         });
     }

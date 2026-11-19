@@ -28,7 +28,7 @@ Built with ASP.NET Core 8 MVC, Entity Framework Core and SQL Server. See [DEPLOY
 ## Leave rules in the code
 
 - Working days exclude Saturdays, Sundays and public holidays entered under HR > Public holidays.
-- The leave year is the calendar year (January to December). A request can't cross 31 December; staff submit two requests.
+- The leave year runs from 1 July to 30 June (see `Services/LeaveYear.cs`). Balances are stored against the calendar year the leave year starts in, so 2026 means 2026/27. A request can't cross 30 June; staff submit two requests.
 - Remaining = eligible + brought forward + adjustments − taken − pending.
 - Leave recorded by HR on someone's behalf is approved immediately and skips the notice and document rules.
 
@@ -42,6 +42,14 @@ dotnet run --environment Development
 
 Development mode uses a local SQLite file (`leave-dev.db`) instead of SQL Server, so nothing else needs installing. Sign in with `admin@yourdomain.org` / `ChangeMe!2026` (from `appsettings.json` > `Seed`).
 
+## Running the tests
+
+```
+dotnet test tests/LeaveManagement.Tests
+```
+
+44 automated tests check the leave rules against a temporary in-memory database: working-day counting, public holidays, half days, prorated entitlement, balance checks, overlaps, notice periods, document rules, approval and rejection, delegation, routing to HR, cancellation, and year-end carry forward. They don't touch your real database.
+
 ## Project layout
 
 ```
@@ -50,6 +58,7 @@ Services/      LeaveService (all leave rules), ImportService, notifications, ema
 Models/        Database entities and form models
 Data/          Database context, first-run setup, SQL Server migrations
 Views/         Pages (Razor + Bootstrap 5)
+tests/         Automated tests (xUnit)
 ```
 
 ## Changing the database

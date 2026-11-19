@@ -27,8 +27,8 @@ public class HomeController : AppController
         var model = new DashboardViewModel
         {
             User = me,
-            Year = today.Year,
-            Balances = await _leave.GetBalancesAsync(me, today.Year),
+            Year = LeaveYear.Current,
+            Balances = await _leave.GetBalancesAsync(me, LeaveYear.Current),
             Upcoming = await _db.LeaveRequests.Include(r => r.LeaveType)
                 .Where(r => r.UserId == me.Id && r.EndDate >= today && (r.Status == LeaveStatus.Pending || r.Status == LeaveStatus.Approved))
                 .OrderBy(r => r.StartDate).Take(5).ToListAsync(),

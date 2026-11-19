@@ -80,7 +80,8 @@ public class LeaveType
     public bool IsActive { get; set; } = true;
 }
 
-/// <summary>Entitlement and days brought forward for one employee, leave type and leave year.</summary>
+/// <summary>Entitlement and days brought forward for one employee, leave type and leave year.
+/// Year is the calendar year the leave year starts in: 2026 means 1 July 2026 to 30 June 2027.</summary>
 public class LeaveBalance
 {
     public int Id { get; set; }
@@ -152,7 +153,8 @@ public class LeaveRequest
     public DateTime? EscalatedAt { get; set; }
     public DateTime? CancelledAt { get; set; }
 
-    public int Year => StartDate.Year;
+    /// <summary>The leave year (1 July to 30 June) the request counts against.</summary>
+    public int Year => LeaveManagement.Services.LeaveYear.Of(StartDate);
 }
 
 public class PublicHoliday

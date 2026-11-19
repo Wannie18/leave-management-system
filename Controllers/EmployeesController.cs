@@ -162,7 +162,9 @@ public class EmployeesController : AppController
     {
         var user = await _db.Users.Include(u => u.Department).Include(u => u.Supervisor).FirstOrDefaultAsync(u => u.Id == id);
         if (user == null) return NotFound();
-        var y = year ?? DateTime.Today.Year;
+        var y = year ?? LeaveYear.Current;
+        var from = LeaveYear.Start(y);
+        var to = LeaveYear.End(y);
         ViewBag.LeaveTypes = new SelectList(await _db.LeaveTypes.Where(t => t.IsActive && t.TracksBalance).ToListAsync(), "Id", "Name");
         return View(new EmployeeBalanceViewModel
         {
@@ -172,7 +174,7 @@ public class EmployeesController : AppController
             Adjustments = await _db.BalanceAdjustments.Include(a => a.LeaveType).Include(a => a.ByUser)
                 .Where(a => a.UserId == id && a.Year == y).OrderByDescending(a => a.CreatedAt).ToListAsync(),
             Requests = await _db.LeaveRequests.Include(r => r.LeaveType)
-                .Where(r => r.UserId == id && r.StartDate.Year == y).OrderByDescending(r => r.StartDate).ToListAsync()
+                .Where(r => r.UserId == id && r.StartDate >= from && r.StartDate <= to).OrderByDescending(r => r.StartDate).ToListAsync()
         });
     }
 
@@ -211,7 +213,7 @@ public class EmployeesController : AppController
         }
         await _db.SaveChangesAsync();
 
-        await _audit.LogAsync(me, "BalanceAdjusted", $"{user.FullName}, {type.Name} {model.Year}: {string.Join(", ", changes)}. Reason: {model.Reason}");
+        await _audit.LogAsync(me, "BalanceAdjusted", $"{user.FullName}, {type.Name} {LeaveYear.Label(model.Year)}: {string.Join(", ", changes)}. Reason: {model.Reason}");
         Flash($"{type.Name} balance updated for {user.FullName}.");
         return RedirectToAction(nameof(Balances), new { id = model.UserId, year = model.Year });
     }

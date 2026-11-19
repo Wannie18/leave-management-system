@@ -25,11 +25,13 @@ public class LeaveController : AppController
     public async Task<IActionResult> Index(int? year)
     {
         var me = await CurrentUserAsync();
-        var y = year ?? DateTime.Today.Year;
+        var y = year ?? LeaveYear.Current;
         ViewBag.Year = y;
+        var from = LeaveYear.Start(y);
+        var to = LeaveYear.End(y);
         ViewBag.Balances = await _leave.GetBalancesAsync(me, y);
         var requests = await _db.LeaveRequests.Include(r => r.LeaveType)
-            .Where(r => r.UserId == me.Id && r.StartDate.Year == y)
+            .Where(r => r.UserId == me.Id && r.StartDate >= from && r.StartDate <= to)
             .OrderByDescending(r => r.StartDate).ToListAsync();
         return View(requests);
     }
@@ -107,11 +109,11 @@ public class LeaveController : AppController
             var people = await _db.Users.Where(u => u.IsActive).OrderBy(u => u.FullName).Select(u => new { u.Id, u.FullName }).ToListAsync();
             model.Employees = new SelectList(people, "Id", "FullName", model.UserId);
             var target = model.UserId != null ? await _db.Users.FindAsync(model.UserId) : null;
-            if (target != null) model.Balances = await _leave.GetBalancesAsync(target, (model.StartDate ?? DateTime.Today).Year);
+            if (target != null) model.Balances = await _leave.GetBalancesAsync(target, LeaveYear.Of(model.StartDate ?? DateTime.Today));
         }
         else
         {
-            model.Balances = await _leave.GetBalancesAsync(me, (model.StartDate ?? DateTime.Today).Year);
+            model.Balances = await _leave.GetBalancesAsync(me, LeaveYear.Of(model.StartDate ?? DateTime.Today));
         }
     }
 

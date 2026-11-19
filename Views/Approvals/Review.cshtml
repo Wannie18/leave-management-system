@@ -42,7 +42,7 @@
         {
             var b = Model.Balance;
             <div class="card p-3 mb-3">
-                <h2 class="h6">@r.User.FullName's @b.LeaveType.Name.ToLower(), @b.Year</h2>
+                <h2 class="h6">@r.User.FullName's @b.LeaveType.Name.ToLower(), @LeaveYear.Label(b.Year)</h2>
                 <table class="table table-sm mb-0">
                     <tr><td>Eligible + brought forward + adjustments</td><td class="text-end">@b.Available.ToString("0.#")</td></tr>
                     <tr><td>Already taken</td><td class="text-end">@b.Taken.ToString("0.#")</td></tr>

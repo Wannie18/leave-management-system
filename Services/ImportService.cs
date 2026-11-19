@@ -66,7 +66,7 @@ public class ImportService
         var notes = wb.AddWorksheet("Instructions");
         notes.Cell(1, 1).Value = "One row per employee. Email is required and must be unique.";
         notes.Cell(2, 1).Value = "Supervisor Email must match another row's Email (or an existing user).";
-        notes.Cell(3, 1).Value = "Eligible Days, Days Brought Forward and Days Taken are for the leave type and year chosen on the import page.";
+        notes.Cell(3, 1).Value = "Eligible Days, Days Brought Forward and Days Taken are for the leave type and leave year (1 July to 30 June) chosen on the import page.";
         notes.Cell(4, 1).Value = "Remaining Days is optional: when given, the import report checks it against what the system calculates.";
         notes.Cell(5, 1).Value = "Role is Employee (default) or HR.";
 
@@ -187,7 +187,7 @@ public class ImportService
         }
 
         await _audit.LogAsync(actor, "SpreadsheetImport",
-            $"{type.Name} {year}: {results.Count(r => r.Status.StartsWith("Created"))} created, {results.Count(r => r.Status.StartsWith("Updated"))} updated, {results.Count(r => r.Status.StartsWith("Error"))} errors.");
+            $"{type.Name} {LeaveYear.Label(year)}: {results.Count(r => r.Status.StartsWith("Created"))} created, {results.Count(r => r.Status.StartsWith("Updated"))} updated, {results.Count(r => r.Status.StartsWith("Error"))} errors.");
         return results;
     }
 
