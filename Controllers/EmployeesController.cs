@@ -18,13 +18,15 @@ public class EmployeesController : AppController
     private readonly UserManager<ApplicationUser> _users;
     private readonly LeaveService _leave;
     private readonly AuditService _audit;
+    private readonly WelcomeEmailService _welcome;
 
-    public EmployeesController(ApplicationDbContext db, UserManager<ApplicationUser> users, LeaveService leave, AuditService audit)
+    public EmployeesController(ApplicationDbContext db, UserManager<ApplicationUser> users, LeaveService leave, AuditService audit, WelcomeEmailService welcome)
     {
         _db = db;
         _users = users;
         _leave = leave;
         _audit = audit;
+        _welcome = welcome;
     }
 
     public async Task<IActionResult> Index(string? q, int? departmentId, bool showInactive = false)
@@ -54,7 +56,7 @@ public class EmployeesController : AppController
         if (u == null) return NotFound();
         var model = new EmployeeEditViewModel
         {
-            Id = u.Id, FullName = u.FullName, Email = u.Email!, EmployeeNumber = u.EmployeeNumber, DepartmentId = u.DepartmentId,
+            Id = u.Id, FullName = u.FullName, Email = u.Email, EmployeeNumber = u.EmployeeNumber, DepartmentId = u.DepartmentId,
             JobTitle = u.JobTitle, SupervisorId = u.SupervisorId, StartDate = u.StartDate, EndDate = u.EndDate, IsActive = u.IsActive,
             IsHr = await _users.IsInRoleAsync(u, Roles.HR), IsAdmin = await _users.IsInRoleAsync(u, Roles.Admin)
         };
@@ -69,6 +71,14 @@ public class EmployeesController : AppController
         var isNew = string.IsNullOrEmpty(model.Id);
         if (isNew && string.IsNullOrEmpty(model.InitialPassword)) ModelState.AddModelError(nameof(model.InitialPassword), "Set an initial password.");
         if (!isNew && model.SupervisorId == model.Id) ModelState.AddModelError(nameof(model.SupervisorId), "An employee cannot supervise themselves.");
+
+        // Staff without email (guards, for example) sign in with their employee number, so they need one.
+        var email = string.IsNullOrWhiteSpace(model.Email) ? null : model.Email.Trim();
+        var number = string.IsNullOrWhiteSpace(model.EmployeeNumber) ? null : model.EmployeeNumber.Trim();
+        if (email == null && number == null)
+            ModelState.AddModelError(nameof(model.Email), "Enter a work email. For staff without email, such as guards, leave it blank and enter an employee number: they sign in with that.");
+        else if (email == null && !number!.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '.' or '_'))
+            ModelState.AddModelError(nameof(model.EmployeeNumber), "Staff without email sign in with their employee number, so it can only use letters, numbers, dashes, dots and underscores.");
 
         if (!ModelState.IsValid)
         {
@@ -88,9 +98,9 @@ public class EmployeesController : AppController
         }
 
         user.FullName = model.FullName.Trim();
-        user.Email = model.Email.Trim();
-        user.UserName = model.Email.Trim();
-        user.EmployeeNumber = model.EmployeeNumber;
+        user.Email = email;
+        user.UserName = email ?? number;
+        user.EmployeeNumber = number;
         user.DepartmentId = model.DepartmentId;
         user.JobTitle = model.JobTitle;
         user.SupervisorId = string.IsNullOrEmpty(model.SupervisorId) ? null : model.SupervisorId;
@@ -112,10 +122,33 @@ public class EmployeesController : AppController
 
         if (!user.IsActive) await _users.UpdateSecurityStampAsync(user); // signs them out everywhere
 
-        await _audit.LogAsync(me, isNew ? "EmployeeCreated" : "EmployeeUpdated", $"{user.FullName} ({user.Email}){(user.IsActive ? "" : " - deactivated")}");
-        Flash(isNew
-            ? $"{user.FullName} has been added. Give them their initial password: {model.InitialPassword} (they will be asked to change it)."
-            : $"{user.FullName} has been updated.");
+        await _audit.LogAsync(me, isNew ? "EmployeeCreated" : "EmployeeUpdated", $"{user.FullName} ({user.Email ?? "no email, signs in as " + user.UserName}){(user.IsActive ? "" : " - deactivated")}");
+
+        if (!isNew)
+        {
+            Flash($"{user.FullName} has been updated.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Adding the employee has already succeeded; the email is a courtesy, so if it can't go the password is shown instead.
+        var outcome = await _welcome.SendAsync(user, model.InitialPassword!);
+        await _audit.LogAsync(me, "WelcomeEmail", $"{user.FullName}: {outcome}");
+        var password = model.InitialPassword;
+        switch (outcome)
+        {
+            case WelcomeEmailOutcome.Sent:
+                Flash($"{user.FullName} has been added. Their temporary password has been emailed to {user.Email}. They will be asked to change it when they first sign in.");
+                break;
+            case WelcomeEmailOutcome.NoEmailAddress:
+                Flash($"{user.FullName} has been added. They have no email address, so nothing was sent. Give them their sign-in details yourself: employee number {user.UserName}, temporary password {password}. They will be asked to change it when they first sign in.", "warning");
+                break;
+            case WelcomeEmailOutcome.EmailNotSetUp:
+                Flash($"{user.FullName} has been added, but email is not set up on this site, so nothing was sent. Give them their temporary password yourself: {password}. They will be asked to change it when they first sign in.", "warning");
+                break;
+            default:
+                Flash($"{user.FullName} has been added, but the email to {user.Email} could not be sent. Give them their temporary password yourself: {password}. They will be asked to change it when they first sign in.", "warning");
+                break;
+        }
         return RedirectToAction(nameof(Index));
     }
 

@@ -9,7 +9,8 @@
                 <div asp-validation-summary="ModelOnly" class="text-danger small"></div>
                 <div class="mb-3">
                     <label asp-for="Email" class="form-label">Work email</label>
-                    <input asp-for="Email" class="form-control" autocomplete="username" autofocus />
+                    <input asp-for="Email" type="text" class="form-control" autocomplete="username" autofocus />
+                    <div class="form-text">No work email? Use your employee number.</div>
                     <span asp-validation-for="Email" class="text-danger small"></span>
                 </div>
                 <div class="mb-3">

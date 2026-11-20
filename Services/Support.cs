@@ -1,7 +1,9 @@
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Mail;
 using LeaveManagement.Data;
 using LeaveManagement.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -41,14 +43,15 @@ public class EmailSender
         _logger = logger;
     }
 
-    public bool IsConfigured => !string.IsNullOrWhiteSpace(_settings.Host);
+    public virtual bool IsConfigured => !string.IsNullOrWhiteSpace(_settings.Host);
 
-    public async Task SendAsync(string to, string subject, string body)
+    /// <summary>Sends a plain-text email. Returns false if email is not set up or the mail server refused it; it never throws.</summary>
+    public virtual async Task<bool> SendAsync(string to, string subject, string body)
     {
         if (!IsConfigured)
         {
             _logger.LogInformation("Email not configured. Would send to {To}: {Subject}\n{Body}", to, subject, body);
-            return;
+            return false;
         }
 
         try
@@ -66,12 +69,69 @@ public class EmailSender
             };
             message.To.Add(to);
             await client.SendMailAsync(message);
+            return true;
         }
         catch (Exception ex)
         {
             // A mail failure must not stop the leave workflow; the in-app notification is still recorded.
             _logger.LogError(ex, "Failed to send email to {To}: {Subject}", to, subject);
+            return false;
         }
+    }
+}
+
+public enum WelcomeEmailOutcome { Sent, NoEmailAddress, EmailNotSetUp, Failed }
+
+/// <summary>Emails a newly added employee how to sign in, with their temporary password.</summary>
+public class WelcomeEmailService
+{
+    public const string Subject = "Your leave system account";
+
+    private readonly EmailSender _email;
+    private readonly LinkBuilder _links;
+    private readonly AppSettings _app;
+
+    public WelcomeEmailService(EmailSender email, LinkBuilder links, IOptions<AppSettings> app)
+    {
+        _email = email;
+        _links = links;
+        _app = app.Value;
+    }
+
+    public async Task<WelcomeEmailOutcome> SendAsync(ApplicationUser user, string temporaryPassword)
+    {
+        if (string.IsNullOrWhiteSpace(user.Email)) return WelcomeEmailOutcome.NoEmailAddress;
+        if (!_email.IsConfigured) return WelcomeEmailOutcome.EmailNotSetUp;
+
+        var body = $"Dear {user.FullName},\n\n"
+            + $"An account has been created for you on the {_app.OrganizationName} Leave Management System. "
+            + "You can use it to apply for leave and see how many days you have left.\n\n"
+            + $"Sign in here: {_links.Absolute("/Account/Login")}\n"
+            + $"Email: {user.Email}\n"
+            + $"Temporary password: {temporaryPassword}\n\n"
+            + "When you first sign in you will be asked to choose your own password.\n\n"
+            + "If you were not expecting this email, please tell HR.\n\n"
+            + $"{_app.OrganizationName} Leave Management System";
+
+        return await _email.SendAsync(user.Email, Subject, body) ? WelcomeEmailOutcome.Sent : WelcomeEmailOutcome.Failed;
+    }
+}
+
+/// <summary>
+/// Email is optional: guards and other staff without email sign in with their employee number instead.
+/// When an email is given it must be valid and nobody else may have it.
+/// </summary>
+public class OptionalUniqueEmailValidator : IUserValidator<ApplicationUser>
+{
+    public async Task<IdentityResult> ValidateAsync(UserManager<ApplicationUser> manager, ApplicationUser user)
+    {
+        var email = await manager.GetEmailAsync(user);
+        if (string.IsNullOrWhiteSpace(email)) return IdentityResult.Success;
+        if (!new EmailAddressAttribute().IsValid(email)) return IdentityResult.Failed(manager.ErrorDescriber.InvalidEmail(email));
+        var owner = await manager.FindByEmailAsync(email);
+        if (owner != null && owner.Id != await manager.GetUserIdAsync(user))
+            return IdentityResult.Failed(manager.ErrorDescriber.DuplicateEmail(email));
+        return IdentityResult.Success;
     }
 }
 

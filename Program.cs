@@ -25,13 +25,14 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
         options.SignIn.RequireConfirmedAccount = false;
-        options.User.RequireUniqueEmail = true;
+        options.User.RequireUniqueEmail = false; // email is optional; OptionalUniqueEmailValidator keeps it unique when given
         options.Password.RequiredLength = 8;
         options.Password.RequireNonAlphanumeric = false;
         options.Lockout.MaxFailedAccessAttempts = 5;
         options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddUserValidator<OptionalUniqueEmailValidator>()
     .AddDefaultTokenProviders();
 
 builder.Services.ConfigureApplicationCookie(options =>
@@ -48,6 +49,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<EmailSender>();
 builder.Services.AddScoped<LinkBuilder>();
 builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<WelcomeEmailService>();
 builder.Services.AddScoped<AuditService>();
 builder.Services.AddScoped<LeaveService>();
 builder.Services.AddScoped<ImportService>();

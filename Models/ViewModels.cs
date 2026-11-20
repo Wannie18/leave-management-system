@@ -6,7 +6,8 @@ namespace LeaveManagement.Models;
 
 public class LoginViewModel
 {
-    [Required, EmailAddress]
+    /// <summary>A work email, or an employee number for staff who have no email.</summary>
+    [Required(ErrorMessage = "Enter your work email or employee number."), Display(Name = "Email or employee number")]
     public string Email { get; set; } = "";
 
     [Required, DataType(DataType.Password)]
@@ -109,8 +110,9 @@ public class EmployeeEditViewModel
     [Required, StringLength(150), Display(Name = "Full name")]
     public string FullName { get; set; } = "";
 
-    [Required, EmailAddress]
-    public string Email { get; set; } = "";
+    /// <summary>Optional: staff without email, such as guards, sign in with their employee number instead.</summary>
+    [EmailAddress, Display(Name = "Work email")]
+    public string? Email { get; set; }
 
     [StringLength(50), Display(Name = "Employee number")]
     public string? EmployeeNumber { get; set; }

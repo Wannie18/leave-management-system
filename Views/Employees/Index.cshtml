@@ -25,7 +25,7 @@
                         <td>@u.EmployeeNumber</td>
                         <td>@u.Department?.Name</td>
                         <td>@(u.Supervisor?.FullName ?? "None (HR approves)")</td>
-                        <td class="small">@u.Email</td>
+                        <td class="small">@if (u.Email != null) { @u.Email } else { <span class="text-muted">No email (signs in as @u.UserName)</span> }</td>
                         <td class="text-end text-nowrap">
                             <a class="btn btn-sm btn-outline-secondary" asp-action="Balances" asp-route-id="@u.Id">Balances</a>
                             <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@u.Id">Edit</a>
