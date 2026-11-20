@@ -34,14 +34,16 @@ public class AccountController : AppController
     {
         if (!ModelState.IsValid) return View(model);
 
-        var user = await _users.FindByEmailAsync(model.Email);
+        // Staff with email sign in with it; staff without email (guards, for example) use their employee number.
+        var login = model.Email.Trim();
+        var user = await _users.FindByEmailAsync(login) ?? await _users.FindByNameAsync(login);
         if (user is { IsActive: false })
         {
             ModelState.AddModelError("", "This account has been deactivated. Please contact HR.");
             return View(model);
         }
 
-        var result = await _signIn.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
+        var result = await _signIn.PasswordSignInAsync(user?.UserName ?? login, model.Password, model.RememberMe, lockoutOnFailure: true);
         if (result.Succeeded)
         {
             await _audit.LogAsync(user, "SignIn", null);

@@ -10,8 +10,8 @@
         <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
         <div class="row">
             <div class="col-md-6 mb-3"><label asp-for="FullName" class="form-label required"></label><input asp-for="FullName" class="form-control" /><span asp-validation-for="FullName" class="text-danger small"></span></div>
-            <div class="col-md-6 mb-3"><label asp-for="Email" class="form-label required">Work email</label><input asp-for="Email" class="form-control" /><span asp-validation-for="Email" class="text-danger small"></span></div>
-            <div class="col-md-4 mb-3"><label asp-for="EmployeeNumber" class="form-label"></label><input asp-for="EmployeeNumber" class="form-control" /></div>
+            <div class="col-md-6 mb-3"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control" /><div class="form-text">Leave blank for staff without email, such as guards. They sign in with their employee number instead.</div><span asp-validation-for="Email" class="text-danger small"></span></div>
+            <div class="col-md-4 mb-3"><label asp-for="EmployeeNumber" class="form-label"></label><input asp-for="EmployeeNumber" class="form-control" /><div class="form-text">Needed if there's no email.</div><span asp-validation-for="EmployeeNumber" class="text-danger small"></span></div>
             <div class="col-md-4 mb-3"><label asp-for="JobTitle" class="form-label"></label><input asp-for="JobTitle" class="form-control" /></div>
             <div class="col-md-4 mb-3">
                 <label asp-for="DepartmentId" class="form-label"></label>
@@ -31,7 +31,7 @@
             <div class="mb-3 col-md-6">
                 <label asp-for="InitialPassword" class="form-label required"></label>
                 <input asp-for="InitialPassword" type="text" class="form-control font-monospace" />
-                <div class="form-text">Give this to the employee. They'll be asked to choose their own password when they first sign in.</div>
+                <div class="form-text">We'll email this to the employee when you save. If they have no email, give it to them yourself. They'll be asked to choose their own password when they first sign in.</div>
                 <span asp-validation-for="InitialPassword" class="text-danger small"></span>
             </div>
         }
